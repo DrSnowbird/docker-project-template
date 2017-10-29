@@ -15,7 +15,7 @@ support whatever you want to do.
 ./build.sh
 ```
 ## Run
-- To run the simple example build image:
+- To run the simple example build image; it will pop up X11 to display Firefox docker-based browser. 
 ```
 ./run.sh
 ```
