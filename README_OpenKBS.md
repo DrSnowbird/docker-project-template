@@ -14,33 +14,52 @@ To provide the common files for building, running a docker project
 ### Pure Container-based Developer Desktop paradigm
 - With our above "simple-minded simple-use", we provide many commonly used "pure docker-based IDEs, Applications, Servers" for software development daily needs.
 
-## Start:
+## Where to start:
 - This project template folder assumes you like to adop and use simple command-based Docker lifecycle paradigm as publicly available in:
 1. OpenKBS GIT HUB [https://hub.docker.com/r/openkbs/] - for pulling the ready to use public Docker Images
 2. OpenKBS Docker HUB [https://github.com/DrSnowbird/] - for advanced users like to build and customize to your own flavor using our open source environments.
 
-## Usage
-1. Copy all the folder's files to your destination, i.e., your new project folder.
-2. Globally replace "docker-project-template" for all the files with your new Docker project repo name, e.g., scala-ide-docker.
-3. Modify two or three files below depending upon your use case:
-- Dockerfile
-- docker-compose.yaml
-- docker.env (if you need to modify docker environments input file)
+## Pre-requisite tool to get you start from a new (freshly installed) Host OS envionrment
+- Use those scripts under ./bin has several useful bash scripts to jump start what you need.
+1. dockerCE-install.sh: Install docker CE with latest version available.
 
-## Build
-- This project provides a simple Dockerfile for the purpose of illustration only. You need to extend/modify the Docker to
-support whatever you want to do.
+# To Start using OpenKBS Containers
+
+## Preparation
+- Create a common folder as the root of any OpenKBS's container source code you pull down, e.g.
+```
+mkdir $HOME/my-github/
+cd $HOME/my-github/
+```
+## Pull
+- Just pull from OpenKBS GIT HUB [https://hub.docker.com/r/openkbs/] to have local source code for specific OpenKBS GIT.
+You should already in the $HOME/my-github/ already, if not go do the above steps again.
+- Now, pull any OpenKBS GitHub
+```
+git pull https://github.com/DrSnowbird/<container_name>.git
+```
+e.g.,
+```
+cd $HOME/my-github/
+git pull https://github.com/DrSnowbird/scala-ide-docker.git
+```
+
+## Run
+- To run the simple example build image; it will pop up X11 to display Firefox docker-based browser.
+Change directory into the new folder just created by the pulling of above "git pull".
+
+```
+cd scala-ide-docker
+./run.sh
+```
+- It will pop up an GUI for user interaction use like Eclipse, or Netbeans.
+
+## Build (You like to build your local image)
 ```
 ./build.sh
 ```
-## Run
-- To run the simple example build image; it will pop up X11 to display Firefox docker-based browser.
-```
-./run.sh
-```
+- (advanced use) You can modify the script to have own image tag by changing "openkbs" to "my" (or whatever name you choose) and run ./build.sh
 
-## Utility tools to get you start from a new (freshly installed) Host OS envionrment
-- Use those scripts under ./bin has several useful bash scripts to jump start what you need.
-1. dockerCE-install.sh: Install docker CE with latest version available.
-2. portainer_resume.sh: Launch portainer to manage all you Docker-based containers (some
-3. container-launcher.sh
+## Additional tools for managing your Containers
+1. portainer_resume.sh: Launch portainer to manage all you Docker-based containers (some
+2. container-launcher.sh: Launch any
