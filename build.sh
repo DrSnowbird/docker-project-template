@@ -7,7 +7,7 @@
 DOCKER_IMAGE_REPO="$(basename `pwd`)"
 imageTag=${1:-"openkbs/${DOCKER_IMAGE_REPO}"}
 
-docker build -t ${imageTag} \
+docker build --rm -t ${imageTag} \
 	-f Dockerfile .
 
 echo "----> Shell into the Container in interactive mode: "
