@@ -26,8 +26,7 @@ function displayPortainerURL() {
 #### ---- Mandatory: Change those ----
 ##################################################
 DOCKER_IMAGE_REPO="$(basename `pwd`)"
-
-imageTag=openkbs/${DOCKER_IMAGE_REPO}
+imageTag=${1:-"openkbs/${DOCKER_IMAGE_REPO}"}
 
 PACKAGE=`echo ${imageTag##*/}|tr "/\-: " "_"`
 

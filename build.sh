@@ -5,8 +5,7 @@
 # - https://github.com/dockerfile/java/blob/master/oracle-java8/Dockerfile
 
 DOCKER_IMAGE_REPO="$(basename `pwd`)"
-
-imageTag=openkbs/${DOCKER_IMAGE_REPO}
+imageTag=${1:-"openkbs/${DOCKER_IMAGE_REPO}"}
 
 docker build -t ${imageTag} \
 	-f Dockerfile .
