@@ -52,6 +52,7 @@ for path in `ls $container_root` ; do
             echo "-------------------------------------------------------------------------"
             echo "... Launching docker-based application: $found now ..."
             echo ">>> $container_root/$found/run.sh "
+            $container_root/$found/run.sh
             echo "-------------------------------------------------------------------------"
             echo
             exit 0
