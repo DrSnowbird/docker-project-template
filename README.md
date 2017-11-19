@@ -4,28 +4,32 @@
 To provide the common files for building, running a docker project
 
 ## Concepts:
-### Simple command-based Docker environments:
-- Docker environment should be very simple as just one click (or one command) to start a Docker-based applications without fudging and mistakes in launch containers.
-- Provide the simplest (ready-to-use) way for running Docker-based command-based envionrment for supporing daily development needs ranging from base docker images (e.g. JDK, Python, ...) up to advanced applications/servers (e.g., scala-ide-docker, Netbean-docker, Eclipse-docker, and many other big data analytics, machine learning, and semantic knowlege graph applications/servers).
+### > Simple command-based Docker environments:
+- Open Source code for all containers:
+For community to extend or improve upon.
+- Hiding the details with one command to run or build:
+As simple as just one command to start a Docker-based applications without fudging and mistakes in launching containers.
 
-### Only needs two scripts: "./run.sh" and "./build.sh"
-- "./run.sh" to instantly stand up your Docker-based application development environment (note that, for Product usage, please enhance all aspects of security -- we are not responsible for security ignornace for your deployments since it is your responsibility)
+### > Container-based Development and Big Data Analytic Environments
+- Providing many commonly used "pure docker-based IDEs, Applications, Servers" for software development daily needs.
+- Supporting development (e.g. JDK, Python, ...) and advanced applications/servers (e.g., scala-ide-docker, Netbean-docker, Jupyter, Zeppelin, SparkNotebook, Eclipse-docker, and many other big data analytic, deep learning, machine learning, and semantic knowledge graph applications/servers).
 
-### Pure Container-based Developer Desktop paradigm
-- With our above "simple-minded simple-use", we provide many commonly used "pure docker-based IDEs, Applications, Servers" for software development daily needs.
+### > Only needs two scripts: "./run.sh" and "./build.sh"
+- "./run.sh" to instantly stand up and "./build/sh" to build containers.
+- For Product usage, please ensure all aspects of security by enhancing source code and setup.
 
-## Start:
-- This project template folder assumes you like to adop and use simple command-based Docker lifecycle paradigm as publicly available in:
-1. OpenKBS GIT HUB [https://hub.docker.com/r/openkbs/] - for pulling the ready to use public Docker Images
+## Resources:
+- This project template folder assumes you like to adopt and use simple command-based Docker life-cycle paradigm using containers:
+1. (Optional to use GIT) OpenKBS GIT HUB [https://hub.docker.com/r/openkbs/] - for pulling the ready to use public Docker Images
 2. OpenKBS Docker HUB [https://github.com/DrSnowbird/] - for advanced users like to build and customize to your own flavor using our open source environments.
 
-## Usage
+## How to Use this template?
 1. Copy all the folder's files to your destination, i.e., your new project folder.
 2. Globally replace "docker-project-template" for all the files with your new Docker project repo name, e.g., scala-ide-docker.
-3. Modify two or three files below depending upon your use case:
-- Dockerfile
-- docker-compose.yaml
-- docker.env (if you need to modify docker environments input file)
+3. Modify files below depending upon your use case:
+Dockerfile, docker-compose.yaml, or docker.env (if you need to modify docker environments input file)
+4. Modify "build.sh" and "run.sh" if needed such as create additional host volume mapping.
+5. Then, you are ready to build and run (see below).
 
 ## Build
 - This project provides a simple Dockerfile for the purpose of illustration only. You need to extend/modify the Docker to
