@@ -68,7 +68,8 @@ echo ${VOLUME_MAP}
 #instanceName=my-${1:-${imageTag%/*}}_$RANDOM
 #instanceName=my-${1:-${imageTag##*/}}
 ## -- transform '-' and space to '_' 
-instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/\-: " "_"`
+#instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/\-: " "_"`
+instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/: " "_"`
 
 echo "---------------------------------------------"
 echo "---- Starting a Container for ${imageTag}"
