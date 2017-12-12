@@ -39,4 +39,3 @@ echo "  docker build -t ${imageTag} . "
 echo
 docker images |grep "$imageTag"
 
-
