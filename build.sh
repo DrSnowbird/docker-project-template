@@ -12,7 +12,7 @@ fi
 ###################################################
 #### **** Container package information ****
 ###################################################
-DOCKER_IMAGE_REPO=`echo $(basename $PWD)|tr '[:upper:]' '[:lower:]' `
+DOCKER_IMAGE_REPO=`echo $(basename $PWD)|tr '[:upper:]' '[:lower:]'|tr "/: " "_" `
 imageTag=${1:-"openkbs/${DOCKER_IMAGE_REPO}"}
 
 docker build --rm -t ${imageTag} \
