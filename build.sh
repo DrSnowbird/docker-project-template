@@ -4,7 +4,15 @@
 # - https://docs.docker.com/engine/userguide/containers/dockerimages/
 # - https://github.com/dockerfile/java/blob/master/oracle-java8/Dockerfile
 
-DOCKER_IMAGE_REPO="$(basename `pwd`)"
+if [ $# -lt 1 ]; then
+    echo "Usage: "
+    echo "  ${0} <image_tag>"
+fi
+
+###################################################
+#### **** Container package information ****
+###################################################
+DOCKER_IMAGE_REPO=`echo $(basename $PWD)|tr '[:upper:]' '[:lower:]'|tr "/: " "_" `
 imageTag=${1:-"openkbs/${DOCKER_IMAGE_REPO}"}
 
 docker build --rm -t ${imageTag} \
@@ -30,5 +38,4 @@ echo "To build again: (there is a dot at the end of the command!)"
 echo "  docker build -t ${imageTag} . "
 echo
 docker images |grep "$imageTag"
-
 

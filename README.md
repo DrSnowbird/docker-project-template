@@ -20,8 +20,8 @@ As simple as just one command to start a Docker-based applications without fudgi
 
 ## Resources
 - This project template folder assumes you like to adopt and use simple command-based Docker life-cycle paradigm using containers:
-1. (Optional to use GIT) OpenKBS GIT HUB [https://hub.docker.com/r/openkbs/] - for pulling the ready to use public Docker Images
-2. OpenKBS Docker HUB [https://github.com/DrSnowbird/] - for advanced users like to build and customize to your own flavor using our open source environments.
+1. OpenKBS Docker HUB [https://github.com/DrSnowbird/] - for pulling the ready to use public Docker Images.
+2. OpenKBS GIT HUB [https://hub.docker.com/r/openkbs/] - for advanced users like to build and customize to your own flavor using our open source environments.
 
 ## How to Use this template?
 1. Copy all the folder's files to your destination, i.e., your new project folder.
