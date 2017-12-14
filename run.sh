@@ -18,7 +18,7 @@ baseDataFolder="$HOME/data-docker"
 ###################################################
 #### ---- Volumes to be mapped (change this!) -----
 #################################################### (examples - some local vars)
-# (exampples)
+# (examples)
 # IDEA_PRODUCT_NAME="IdeaIC2017"
 # IDEA_PRODUCT_VERSION="3"
 # IDEA_INSTALL_DIR="${IDEA_PRODUCT_NAME}.${IDEA_PRODUCT_VERSION}"
@@ -30,6 +30,14 @@ baseDataFolder="$HOME/data-docker"
 # MANDATORY Variable: VOLUMES
 # ---------------------------
 VOLUMES="data workspace"
+
+# ---------------------------
+# OPTIONAL Variable: PORT PAIR
+# ---------------------------
+#### Input: PORT - list of PORT to be mapped
+# (examples)
+#PORT_MAPPING_LIST="18000:8000"
+PORT_MAPPING_LIST=
 
 #########################################################################################################
 ######################## DON'T CHANGE LINES STARTING BELOW (unless you need to) #########################
@@ -45,10 +53,10 @@ VOLUME_MAP=""
 #### Input: VOLUMES - list of volumes to be mapped
 function generateVolumeMapping() {
     for vol in $VOLUMES; do
-        echo "$vol"
+        #echo "$vol"
         if [[ $vol == "/"* ]]; then
             # -- non-default /home/developer path; then use the full absolute path --
-            VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/$vol:$vol"
+            VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}$vol:$vol"
         else
             # -- default sub-directory (without prefix absolute path) --
             VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/$vol:${DOCKER_VOLUME_DIR}/$vol"
@@ -60,6 +68,27 @@ function generateVolumeMapping() {
 #### ---- Generate Volumes Mapping ----
 generateVolumeMapping
 echo ${VOLUME_MAP}
+
+###################################################
+#### ---- Function: Generate port mappings  ----
+####      (Don't change!)
+###################################################
+PORT_MAP=""
+function generatePortMapping() {
+    for pp in $PORT_MAPPING_LIST; do
+        #echo "$pp"
+        port_pair=`echo $pp |  tr -d ' ' `
+        if [ ! "$port_pair" == "" ]; then
+            # -p ${local_dockerPort1}:${dockerPort1} 
+            host_port=`echo $port_pair | tr -d ' ' | cut -d':' -f1`
+            docker_port=`echo $port_pair | tr -d ' ' | cut -d':' -f2`
+            PORT_MAP="${PORT_MAP} -p ${host_port}:${docker_port}"
+        fi
+    done
+}
+#### ---- Generate Port Mapping ----
+generatePortMapping
+echo ${PORT_MAP}
 
 ###################################################
 #### ---- Mostly, you don't need change below ----
@@ -80,6 +109,7 @@ docker run -ti --rm \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     ${VOLUME_MAP} \
+    ${PORT_MAP} \
     ${imageTag}
 
 

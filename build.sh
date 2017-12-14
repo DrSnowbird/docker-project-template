@@ -10,12 +10,29 @@ if [ $# -lt 1 ]; then
 fi
 
 ###################################################
-#### **** Container package information ****
+#### ---- Generate build-arg arguments ----
+###################################################
+BUILD_ARGS=""
+ARGS_DEFINITION_FILE="./docker.env"
+function generateBuildArgs() {
+    for r in `cat $ARGS_DEFINITION_FILE`; do
+        echo "entry=$r"
+        key=`echo $r | tr -d ' ' | cut -d'=' -f1`
+        value=`echo $r | tr -d ' ' | cut -d'=' -f2`
+        BUILD_ARGS="${BUILD_ARGS} --build-arg $key=$value"
+    done
+}
+#generateBuildArgs
+echo "BUILD_ARGS=${BUILD_ARGS}"
+
+###################################################
+#### ---- Container package information ----
 ###################################################
 DOCKER_IMAGE_REPO=`echo $(basename $PWD)|tr '[:upper:]' '[:lower:]'|tr "/: " "_" `
 imageTag=${1:-"openkbs/${DOCKER_IMAGE_REPO}"}
 
 docker build --rm -t ${imageTag} \
+    ${BUILD_ARGS} \
 	-f Dockerfile .
 
 echo "----> Shell into the Container in interactive mode: "
