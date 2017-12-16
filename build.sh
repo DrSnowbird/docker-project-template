@@ -14,15 +14,16 @@ fi
 ###################################################
 BUILD_ARGS=""
 ARGS_DEFINITION_FILE="./docker.env"
+## -- ignore entries start with "#" symbol --
 function generateBuildArgs() {
-    for r in `cat $ARGS_DEFINITION_FILE`; do
+    for r in `cat $ARGS_DEFINITION_FILE|grep -v '^#'`; do
         echo "entry=$r"
         key=`echo $r | tr -d ' ' | cut -d'=' -f1`
         value=`echo $r | tr -d ' ' | cut -d'=' -f2`
         BUILD_ARGS="${BUILD_ARGS} --build-arg $key=$value"
     done
 }
-#generateBuildArgs
+generateBuildArgs
 echo "BUILD_ARGS=${BUILD_ARGS}"
 
 ###################################################
