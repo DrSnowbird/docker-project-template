@@ -6,11 +6,16 @@ if [ $# -lt 1 ]; then
 fi
 
 ###################################################
+#### ---- Change this only if want to use your own
+###################################################
+ORGANIZATION=openkbs
+
+###################################################
 #### **** Container package information ****
 ###################################################
 MY_IP=`ip route get 1|awk '{print$NF;exit;}'`
 DOCKER_IMAGE_REPO=`echo $(basename $PWD)|tr '[:upper:]' '[:lower:]'|tr "/: " "_" `
-imageTag=${1:-"openkbs/${DOCKER_IMAGE_REPO}"}
+imageTag=${1:-"${ORGANIZATION}/${DOCKER_IMAGE_REPO}"}
 #PACKAGE=`echo ${imageTag##*/}|tr "/\-: " "_"`
 PACKAGE="${imageTag##*/}"
 baseDataFolder="$HOME/data-docker"
@@ -24,20 +29,26 @@ baseDataFolder="$HOME/data-docker"
 # IDEA_INSTALL_DIR="${IDEA_PRODUCT_NAME}.${IDEA_PRODUCT_VERSION}"
 # IDEA_CONFIG_DIR=".${IDEA_PRODUCT_NAME}.${IDEA_PRODUCT_VERSION}"
 # IDEA_PROJECT_DIR="IdeaProjects"
-# VOLUMES="${IDEA_CONFIG_DIR} ${IDEA_PROJECT_DIR}"
+# VOLUMES_LIST="${IDEA_CONFIG_DIR} ${IDEA_PROJECT_DIR}"
 
 # ---------------------------
-# MANDATORY Variable: VOLUMES
+# Variable: VOLUMES_LIST
+# (NEW: use docker.env with "#VOLUMES_LIST=data workspace" to define entries)
 # ---------------------------
-VOLUMES="data workspace"
+## -- If you defined locally here, 
+##    then the definitions of volumes map in "docker.env" will be ignored.
+# VOLUMES_LIST="data workspace"
 
 # ---------------------------
 # OPTIONAL Variable: PORT PAIR
+# (NEW: use docker.env with "#PORTS=18000:8000 17200:7200" to define entries)
 # ---------------------------
+## -- If you defined locally here, 
+##    then the definitions of ports map in "docker.env" will be ignored.
 #### Input: PORT - list of PORT to be mapped
 # (examples)
-#PORT_MAPPING_LIST="18000:8000"
-PORT_MAPPING_LIST=
+#PORTS_LIST="18000:8000"
+#PORTS_LIST=
 
 #########################################################################################################
 ######################## DON'T CHANGE LINES STARTING BELOW (unless you need to) #########################
@@ -52,7 +63,12 @@ DOCKER_VOLUME_DIR="/home/developer"
 VOLUME_MAP=""
 #### Input: VOLUMES - list of volumes to be mapped
 function generateVolumeMapping() {
-    for vol in $VOLUMES; do
+    if [ "$VOLUMES_LIST" == "" ]; then
+        ## -- If locally defined in this file, then respect that first.
+        ## -- Otherwise, go lookup the docker.env as ride-along source for volume definitions
+        VOLUMES_LIST=`cat docker.env|grep "^#VOLUMES_LIST= *"|sed "s/[#\"]//g"|cut -d'=' -f2-`
+    fi
+    for vol in $VOLUMES_LIST; do
         #echo "$vol"
         if [[ $vol == "/"* ]]; then
             # -- non-default /home/developer path; then use the full absolute path --
@@ -75,7 +91,12 @@ echo ${VOLUME_MAP}
 ###################################################
 PORT_MAP=""
 function generatePortMapping() {
-    for pp in $PORT_MAPPING_LIST; do
+    if [ "$PORTS" == "" ]; then
+        ## -- If locally defined in this file, then respect that first.
+        ## -- Otherwise, go lookup the docker.env as ride-along source for volume definitions
+        PORTS_LIST=`cat docker.env|grep "^#PORTS_LIST= *"|sed "s/[#\"]//g"|cut -d'=' -f2-`
+    fi
+    for pp in ${PORTS_LIST}; do
         #echo "$pp"
         port_pair=`echo $pp |  tr -d ' ' `
         if [ ! "$port_pair" == "" ]; then

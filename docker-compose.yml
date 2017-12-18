@@ -10,6 +10,8 @@ services:
       - GROUP_ID=${GROUP_ID:-1000}
     env_file:
       - ./docker.env
+#    ports:
+#      - 8080:8080
     volumes:
       - ./workspace:/home/developer/workspace
 
