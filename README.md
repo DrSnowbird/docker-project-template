@@ -38,6 +38,17 @@ support whatever you want to do.
 ./build.sh
 ```
 
+## (NEW) Configuration
+New extension to allow users to enter "Volume mapping" and "Port mapping" entries together with "docker.env" file with "#" syntax to avoid docker-compose pick up the entries -- "Rider" configuration!
+Here is the example syntax:
+```
+#### Rider configuration for run.sh ####
+# - Use "#VOLUMES" and "#PORTS" to indicate that the variables for run.sh"
+# - To ignore line, use "##" (double) in the beginning, e.g. "##VOLUMES" and "##PORTS"
+# - To indicate that the variables for run.sh", use only one "#",  e.g. "#VOLUMES" and "#PORTS"
+#VOLUMES_LIST="data workspace"
+##PORTS_LIST="18080:8000 17200:7200"
+```
 ## Run
 - To run the simple example build image; it will pop up X11 to display Firefox docker-based browser.
 ```
