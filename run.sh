@@ -6,9 +6,10 @@ if [ $# -lt 1 ]; then
 fi
 
 ###################################################
-#### ---- Change this only if want to use your own
+#### ---- Change this only to use your own ----
 ###################################################
 ORGANIZATION=openkbs
+baseDataFolder="$HOME/data-docker"
 
 ###################################################
 #### **** Container package information ****
@@ -18,11 +19,11 @@ DOCKER_IMAGE_REPO=`echo $(basename $PWD)|tr '[:upper:]' '[:lower:]'|tr "/: " "_"
 imageTag=${1:-"${ORGANIZATION}/${DOCKER_IMAGE_REPO}"}
 #PACKAGE=`echo ${imageTag##*/}|tr "/\-: " "_"`
 PACKAGE="${imageTag##*/}"
-baseDataFolder="$HOME/data-docker"
 
 ###################################################
+#### ---- (DEPRECATED but still supported)    -----
 #### ---- Volumes to be mapped (change this!) -----
-#################################################### (examples - some local vars)
+###################################################
 # (examples)
 # IDEA_PRODUCT_NAME="IdeaIC2017"
 # IDEA_PRODUCT_VERSION="3"
@@ -54,6 +55,7 @@ baseDataFolder="$HOME/data-docker"
 ######################## DON'T CHANGE LINES STARTING BELOW (unless you need to) #########################
 #########################################################################################################
 LOCAL_VOLUME_DIR="${baseDataFolder}/${PACKAGE}"
+## -- Container's internal Volume base DIR
 DOCKER_VOLUME_DIR="/home/developer"
 
 ###################################################
@@ -124,8 +126,8 @@ instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/: " "
 echo "---------------------------------------------"
 echo "---- Starting a Container for ${imageTag}"
 echo "---------------------------------------------"
-DISPLAY=${MY_IP}:0 \
-docker run -d --rm \
+echo ${DISPLAY}
+docker run -it --rm \
     --name=${instanceName} \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
