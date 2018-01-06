@@ -153,7 +153,7 @@ echo "---------------------------------------------"
 
 echo ${DISPLAY}
 xhost +SI:localuser:$(id -un) 
-docker run -d \
+docker run -it \
     --name=${instanceName} \
     --restart=always \
     ${privilegedString} \
