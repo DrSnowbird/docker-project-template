@@ -72,12 +72,18 @@ function generateVolumeMapping() {
     fi
     for vol in $VOLUMES_LIST; do
         #echo "$vol"
-        if [[ $vol == "/"* ]]; then
-            # -- non-default /home/developer path; then use the full absolute path --
-            VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}$vol:$vol"
+	hasColon=`echo $vol|grep ":"`
+        if [ ! "$hasColon" == "" ]; then
+            # asymetric mapping paths, like "/srv/docker/bind:/data"
+            VOLUME_MAP="${VOLUME_MAP} -v $vol" 
         else
-            # -- default sub-directory (without prefix absolute path) --
-            VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/$vol:${DOCKER_VOLUME_DIR}/$vol"
+            if [[ $vol == "/"* ]]; then
+                echo "-- non-default /home/developer path; then use the full absolute path --"
+                VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}$vol:$vol"
+            else
+                echo "-- default sub-directory (without prefix absolute path) --"
+                VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/$vol:${DOCKER_VOLUME_DIR}/$vol"
+            fi
         fi
         mkdir -p ${LOCAL_VOLUME_DIR}/$vol
         ls -al ${LOCAL_VOLUME_DIR}/$vol
@@ -114,6 +120,24 @@ generatePortMapping
 echo ${PORT_MAP}
 
 ###################################################
+#### ---- Function: Generate privilege String  ----
+####      (Don't change!)
+###################################################
+privilegedString=""
+function generatePrivilegedString() {
+    OS_VER=`which yum`
+    if [ "$OS_VER" == "" ]; then
+        # Ubuntu
+        echo "Ubuntu ... not SE-Lunix ... no privileged needed"
+    else
+        # CentOS/RHEL
+        privilegedString="--privileged"
+    fi
+}
+generatePrivilegedString
+echo ${privilegedString}
+
+###################################################
 #### ---- Mostly, you don't need change below ----
 ###################################################
 
@@ -126,9 +150,14 @@ instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/: " "
 echo "---------------------------------------------"
 echo "---- Starting a Container for ${imageTag}"
 echo "---------------------------------------------"
+
 echo ${DISPLAY}
-docker run -it --rm \
+xhost +SI:localuser:$(id -un) 
+docker run -d \
     --name=${instanceName} \
+    --restart=always \
+    ${privilegedString} \
+    --user=$(id -u):$(id -g) \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     ${VOLUME_MAP} \
