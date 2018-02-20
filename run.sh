@@ -141,8 +141,7 @@ echo ${privilegedString}
 #### ---- Mostly, you don't need change below ----
 ###################################################
 function cleanup() {
-    found=`docker ps|grep ${instanceName}`
-    if [ ! "$found" == "" ]; then
+    if [ ! "`docker ps -a|grep ${instanceName}`" == "" ]; then
          docker rm -f ${instanceName}
     fi
 }
