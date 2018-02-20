@@ -140,6 +140,12 @@ echo ${privilegedString}
 ###################################################
 #### ---- Mostly, you don't need change below ----
 ###################################################
+function cleanup() {
+    found=`docker ps|grep ${instanceName}`
+    if [ ! "$found" == "" ]; then
+         docker rm -f ${instanceName}
+    fi
+}
 
 #instanceName=my-${1:-${imageTag%/*}}_$RANDOM
 #instanceName=my-${1:-${imageTag##*/}}
@@ -150,6 +156,8 @@ instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/: " "
 echo "---------------------------------------------"
 echo "---- Starting a Container for ${imageTag}"
 echo "---------------------------------------------"
+
+cleanup
 
 echo ${DISPLAY}
 xhost +SI:localuser:$(id -un) 
@@ -164,4 +172,5 @@ docker run -it \
     ${PORT_MAP} \
     ${imageTag}
 
+cleanup
 

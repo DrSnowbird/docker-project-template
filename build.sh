@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash -x
 
 # Reference: 
 # - https://docs.docker.com/engine/userguide/containers/dockerimages/
