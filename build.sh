@@ -8,6 +8,8 @@ if [ $# -lt 1 ]; then
     echo "Usage: "
     echo "  ${0} <image_tag>"
 fi
+MY_DIR=$(dirname "$(readlink -f "$0")")
+
 
 ###################################################
 #### ---- Change this only if want to use your own
