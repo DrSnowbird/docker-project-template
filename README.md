@@ -1,5 +1,5 @@
 # Docker Project Template
-
+[![](https://images.microbadger.com/badges/image/openkbs/docker-project-template.svg)](https://microbadger.com/images/openkbs/docker-project-template "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/openkbs/docker-project-template.svg)](https://microbadger.com/images/openkbs/docker-project-template "Get your own version badge on microbadger.com")
 ## Purpose
 To provide the common files for building, running a docker project
 
@@ -20,16 +20,28 @@ As simple as just one command to start a Docker-based applications without fudgi
 
 ## Resources
 - This project template folder assumes you like to adopt and use simple command-based Docker life-cycle paradigm using containers:
-1. OpenKBS Docker HUB [https://github.com/DrSnowbird/] - for pulling the ready to use public Docker Images.
-2. OpenKBS GIT HUB [https://hub.docker.com/r/openkbs/] - for advanced users like to build and customize to your own flavor using our open source environments.
+1. OpenKBS Docker HUB [https://hub.docker.com/r/openkbs/] - for pulling the ready to use public Docker Images.
+2. OpenKBS GIT HUB [https://github.com/DrSnowbird/] - for advanced users like to build and customize to your own flavor using our open source environments.
 
 ## How to Use this template?
-1. Copy all the folder's files to your destination, i.e., your new project folder.
+1. Git clone or Copy all the folder's files to your destination, i.e., your new project folder.
 2. Globally replace "docker-project-template" for all the files with your new Docker project repo name, e.g., scala-ide-docker.
 3. Modify files below depending upon your use case:
 Dockerfile, docker-compose.yaml, or docker.env (if you need to modify docker environments input file)
-4. Modify "build.sh" and "run.sh" if needed such as create additional host volume mapping.
-5. Then, you are ready to build and run (see below).
+4. You don't have to modify the generic scripts, "build.sh" and "run.sh".
+5. (optional) Modify "build.sh" and "run.sh" if needed to change any of these two scripts - expert only!
+6. Add any Volumes you want auto mapping between Host and Docker Container: add volume entries in "docker.env" files - the file has explanation text in it. For example, to create two mapping of volumes, "data" and "workspace", 
+```
+#### Rider configuration for run.sh ####
+# - Use "#VOLUMES" and "#PORTS" to indicate that the variables for run.sh"
+# - To ignore line, use "##" (double) in the beginning, 
+#     e.g. "##VOLUMES" and "##PORTS"
+# - To indicate that the variables for run.sh", use only one "#",  
+#     e.g. "#VOLUMES" and "#PORTS"
+#VOLUMES_LIST="data workspace"
+
+```
+6. Then, you are ready to build and run (see below).
 
 ## Build
 - This project provides a simple Dockerfile for the purpose of illustration only. You need to extend/modify the Docker to
