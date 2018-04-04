@@ -72,3 +72,6 @@ Scripts under ./bin have several useful bash scripts to jump start what you need
 1. dockerCE-install.sh: Install docker CE with latest version available.
 2. portainer_resume.sh: Launch portainer to manage all you Docker-based containers.
 3. container-launcher.sh: Launch specific container using "pattern expression".
+
+## References & Resources
+* [Docker ARG and ENV Guide](https://vsupalov.com/docker-arg-env-variable-guide/)
