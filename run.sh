@@ -4,7 +4,10 @@ MY_DIR=$(dirname "$(readlink -f "$0")")
 
 if [ $# -lt 1 ]; then
     echo "Usage: "
-    echo "  ${0} <image_tag>"
+    echo "  ${0}  <MPI_CMD> <MPI_CORES> ... <more_args>"
+    echo "e.g.: "
+    echo "  ${0} pt2pt/osu_bw 2"
+    echo "  ${0} collective/osu_reduce_scatter 2"
 fi
 
 ###################################################
@@ -18,7 +21,7 @@ baseDataFolder="$HOME/data-docker"
 ###################################################
 MY_IP=`ip route get 1|awk '{print$NF;exit;}'`
 DOCKER_IMAGE_REPO=`echo $(basename $PWD)|tr '[:upper:]' '[:lower:]'|tr "/: " "_" `
-imageTag=${1:-"${ORGANIZATION}/${DOCKER_IMAGE_REPO}"}
+imageTag="${ORGANIZATION}/${DOCKER_IMAGE_REPO}"
 #PACKAGE=`echo ${imageTag##*/}|tr "/\-: " "_"`
 PACKAGE="${imageTag##*/}"
 
@@ -183,8 +186,6 @@ function cleanup() {
     fi
 }
 
-#instanceName=my-${1:-${imageTag%/*}}_$RANDOM
-#instanceName=my-${1:-${imageTag##*/}}
 ## -- transform '-' and space to '_' 
 #instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/\-: " "_"`
 instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/: " "_"`
@@ -205,7 +206,7 @@ docker run -it \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     ${VOLUME_MAP} \
     ${PORT_MAP} \
-    ${imageTag}
+    ${imageTag} $*
 
 cleanup
 
