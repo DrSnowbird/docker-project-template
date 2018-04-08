@@ -4,10 +4,7 @@ MY_DIR=$(dirname "$(readlink -f "$0")")
 
 if [ $# -lt 1 ]; then
     echo "Usage: "
-    echo "  ${0}  <MPI_CMD> <MPI_CORES> ... <more_args>"
-    echo "e.g.: "
-    echo "  ${0} pt2pt/osu_bw 2"
-    echo "  ${0} collective/osu_reduce_scatter 2"
+    echo "  ${0} <image_tag>"
 fi
 
 ###################################################
