@@ -4,7 +4,9 @@ MY_DIR=$(dirname "$(readlink -f "$0")")
 
 if [ $# -lt 1 ]; then
     echo "Usage: "
-    echo "  ${0} <image_tag>"
+    echo "  ${0} <container_shell_command>"
+    echo "e.g.: "
+    echo "  ${0} ls -al "
 fi
 
 ###################################################
