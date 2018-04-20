@@ -185,6 +185,18 @@ function cleanup() {
     fi
 }
 
+function displayURL() {
+    port=${1}
+    echo "... Go to: http://${MY_IP}:${port}"
+    #firefox http://${MY_IP}:${port} &
+    if [ "`which google-chrome`" != "" ]; then
+        /usr/bin/google-chrome http://${MY_IP}:${port} &
+    else
+        firefox http://${MY_IP}:${port} &
+    fi
+}
+
+
 ## -- transform '-' and space to '_' 
 #instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/\-: " "_"`
 instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/: " "_"`
