@@ -2,10 +2,21 @@ FROM openkbs/jdk-mvn-py3-x11
 
 MAINTAINER DrSnowbird "DrSnowbird@openkbs.org"
 
+#### ---- Build Specification ----
 # Metadata params
-ARG BUILD_DATE
-ARG VERSION
-ARG VCS_REF
+ARG BUILD_DATE=${BUILD_DATE:-}
+ARG VERSION=${BUILD_DATE:-}
+ARG VCS_REF=${BUILD_DATE:-}
+
+#### ---- Product Specifications ----
+ARG PRODUCT=${PRODUCT:-}
+ARG PRODUCT_VERSION=${PRODUCT_VERSION:-}
+ARG PRODUCT_DIR=${PRODUCT_DIR:-}
+ARG PRODUCT_EXE=${PRODUCT_EXE:-}
+ENV PRODUCT=${PRODUCT}
+ENV PRODUCT_VERSION=${PRODUCT_VERSION}
+ENV PRODUCT_DIR=${PRODUCT_DIR}
+ENV PRODUCT_EXE=${PRODUCT_EXE}
 
 # Metadata
 LABEL org.label-schema.url="https://imagelayers.io" \
