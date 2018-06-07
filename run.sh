@@ -196,6 +196,22 @@ function displayURL() {
     fi
 }
 
+###################################################
+#### ---- Replace "Key=Value" withe new value ----
+###################################################
+function replaceKeyValue() {
+    inFile=${1:-./docker.env}
+    keyLike=$2
+    newValue=$3
+    if [ "$2" == "" ]; then
+        echo "**** ERROR: Empty Key value! Abort!"
+        exit 1
+    fi
+    sed -i -E 's/^('$keyLike'[[:blank:]]*=[[:blank:]]*).*/\1'$newValue'/' $inFile
+}
+#### ---- Replace docker.env with local user's UID and GID ----
+replaceKeyValue ./docker.env "USER_ID" "$(id -u $USER)"
+replaceKeyValue ./docker.env "GROUP_ID" "$(id -g $USER)"
 
 ## -- transform '-' and space to '_' 
 #instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/\-: " "_"`
@@ -209,12 +225,14 @@ cleanup
 
 echo ${DISPLAY}
 xhost +SI:localuser:$(id -un) 
+DISPLAY=${MY_IP}:0 \
 docker run -it \
     --name=${instanceName} \
     --restart=always \
     ${privilegedString} \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
+    --user $(id -u $USER) \
     ${VOLUME_MAP} \
     ${PORT_MAP} \
     ${imageTag} $*
