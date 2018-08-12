@@ -63,6 +63,7 @@ Here is the example syntax:
 ```
 ## Run
 - To run the simple example build image; it will pop up X11 to display Firefox docker-based browser.
+Note that the script "run.sh" is designed to generic for every project with assumption that it use the "current git directory name" to figure out the image name you may want to use.
 ```
 ./run.sh
 ```
