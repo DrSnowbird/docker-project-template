@@ -28,5 +28,6 @@ LABEL org.label-schema.url="https://imagelayers.io" \
       org.label-schema.description="This utility provides a docker template files for building Docker." \
       org.label-schema.schema-version="1.0"
       
-RUN echo $HOME
+RUN echo PRODUCT=${PRODUCT} && echo HOME=$HOME
+
 CMD ["/usr/bin/firefox"]

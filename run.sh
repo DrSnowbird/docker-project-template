@@ -197,10 +197,30 @@ function displayURL() {
 }
 
 ###################################################
+#### ---- Detect docker ----
+###################################################
+DOCKER_ENV_FILE="./.env"
+function detectDockerEnvFile() {
+    curr_dir=`pwd`
+    if [ -s "./.env" ]; then
+        echo "--- INFO: ./.env Docker Environment file (.env) FOUND!"
+        DOCKER_ENV_FILE="./.env"
+    else
+        echo "--- INFO: ./.env Docker Environment file (.env) NOT found!"
+        if [ -s "./docker.env" ]; then
+            DOCKER_ENV_FILE="./docker.env"
+        else
+            echo "*** WARNING: Docker Environment file (.env) or (docker.env) NOT found!"
+        fi
+    fi
+}
+detectDockerEnvFile
+
+###################################################
 #### ---- Replace "Key=Value" withe new value ----
 ###################################################
 function replaceKeyValue() {
-    inFile=${1:-./docker.env}
+    inFile=${1:-${DOCKER_ENV_FILE}}
     keyLike=$2
     newValue=$3
     if [ "$2" == "" ]; then
@@ -210,8 +230,8 @@ function replaceKeyValue() {
     sed -i -E 's/^('$keyLike'[[:blank:]]*=[[:blank:]]*).*/\1'$newValue'/' $inFile
 }
 #### ---- Replace docker.env with local user's UID and GID ----
-replaceKeyValue ./docker.env "USER_ID" "$(id -u $USER)"
-replaceKeyValue ./docker.env "GROUP_ID" "$(id -g $USER)"
+replaceKeyValue ${DOCKER_ENV_FILE} "USER_ID" "$(id -u $USER)"
+replaceKeyValue ${DOCKER_ENV_FILE} "GROUP_ID" "$(id -g $USER)"
 
 ## -- transform '-' and space to '_' 
 #instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/\-: " "_"`
