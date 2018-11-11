@@ -248,7 +248,7 @@ cleanup
 RESTART_OPTION=no
 
 echo ${DISPLAY}
-xhost +SI:localuser:$(id -un) 
+
 DISPLAY=${MY_IP}:0 \
 docker run -it \
     --name=${instanceName} \
@@ -256,7 +256,6 @@ docker run -it \
     ${privilegedString} \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
-    --user $(id -u $USER) \
     ${VOLUME_MAP} \
     ${PORT_MAP} \
     ${imageTag} $*

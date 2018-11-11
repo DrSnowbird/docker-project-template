@@ -28,6 +28,16 @@ LABEL org.label-schema.url="https://imagelayers.io" \
       org.label-schema.description="This utility provides a docker template files for building Docker." \
       org.label-schema.schema-version="1.0"
       
-RUN echo PRODUCT=${PRODUCT} && echo HOME=$HOME
+RUN echo PRODUCT=${PRODUCT} && echo HOME=$HOME && \
+    sudo apt install -y firefox
 
-CMD ["/usr/bin/firefox"]
+#### --- Copy Entrypoint script in the container ---- ####
+COPY ./docker-entrypoint.sh /
+
+#### --- Enterpoint for container ---- ####
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+#### (Test only)
+#CMD ["/usr/bin/firefox"]
+
+
