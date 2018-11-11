@@ -10,7 +10,7 @@ echo "Starting docker process daemon ..."
 
 #Extra line added in the script to run all command line arguments
 if [ $# -lt 1 ]; then
-    exec "$@ /bin/bash";
+    exec "/bin/bash";
 else
     exec "$@";
 fi
