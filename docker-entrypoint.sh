@@ -9,4 +9,8 @@ echo "Starting docker process daemon ..."
 /bin/bash -c "${PRODUCT_EXE:-echo Hello}"
 
 #Extra line added in the script to run all command line arguments
-exec "$@";
+if [ $# -lt 1 ]; then
+    exec "$@ /bin/bash";
+else
+    exec "$@";
+fi
