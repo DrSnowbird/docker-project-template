@@ -58,8 +58,10 @@ generateBuildArgs
 ###################################################
 # export NO_PROXY="localhost,127.0.0.1,.openkbs.org"
 # export HTTP_PROXY="http://gatekeeper-w.openkbs.org:80"
+# when using "wget", add "--no-check-certificate" to avoid https certificate checking failures
+#
 if [ "${HTTP_PROXY}" != "" ]; then
-    HTTP_PROXY_PARAM="--no-check-certificate --build-arg http_proxy=${HTTP_PROXY} --build-arg https_proxy=${HTTP_PROXY}"
+    HTTP_PROXY_PARAM="--build-arg http_proxy=${HTTP_PROXY} --build-arg https_proxy=${HTTP_PROXY}"
 else
     HTTP_PROXY_PARAM=
 fi
