@@ -9,6 +9,11 @@ if [ $# -lt 1 ]; then
     echo "  ${0} ls -al "
 fi
 
+###########################################################################
+#### (Optional - if you want add Environmental Variable for Running Docker)
+###########################################################################
+ENV_VARIABLE_PATTERN="MYSQL"
+
 ###################################################
 #### ---- Change this only to use your own ----
 ###################################################
@@ -61,7 +66,6 @@ PACKAGE="${imageTag##*/}"
 LOCAL_VOLUME_DIR="${baseDataFolder}/${PACKAGE}"
 ## -- Container's internal Volume base DIR
 DOCKER_VOLUME_DIR="/home/developer"
-
 
 ###################################################
 #### ---- Detect docker ----
@@ -180,6 +184,25 @@ generatePortMapping
 echo ${PORT_MAP}
 
 ###################################################
+#### ---- Generate Environment Variables       ----
+###################################################
+ENV_VARS=""
+function generateProductEnvVars() {
+    ## -- product key patterns, e.g., "^MYSQL_*"
+    if [ "$1" != "" ]; then
+        #productEnvVars=`grep -E "^[[:blank:]]*$1[a-zA-Z0-9_]+[[:blank:]]*=[[:blank:]]*[a-zA-Z0-9_]+[[:blank:]]*" ${DOCKER_ENV_FILE}`
+        productEnvVars=`grep -E "^[[:blank:]]*$1.+[[:blank:]]*=[[:blank:]]*.+[[:blank:]]*" ${DOCKER_ENV_FILE}`
+        ENV_VARS=""
+        for vars in ${productEnvVars// /}; do
+            ENV_VARS="${ENV_VARS} -e ${vars}"
+        done
+        echo "ENV_VARS="$ENV_VARS
+    else
+        echo "No product environment vars specificed for running docker!"
+    fi
+}
+
+###################################################
 #### ---- Function: Generate privilege String  ----
 ####      (Don't change!)
 ###################################################
@@ -218,7 +241,7 @@ function displayURL() {
 }
 
 ###################################################
-#### ---- Replace "Key=Value" withe new value ----
+#### ---- Replace "Key=Value" with new value   ----
 ###################################################
 function replaceKeyValue() {
     inFile=${1:-${DOCKER_ENV_FILE}}
@@ -231,18 +254,50 @@ function replaceKeyValue() {
     sed -i -E 's/^('$keyLike'[[:blank:]]*=[[:blank:]]*).*/\1'$newValue'/' $inFile
 }
 #### ---- Replace docker.env with local user's UID and GID ----
-replaceKeyValue ${DOCKER_ENV_FILE} "USER_ID" "$(id -u $USER)"
-replaceKeyValue ${DOCKER_ENV_FILE} "GROUP_ID" "$(id -g $USER)"
+#replaceKeyValue ${DOCKER_ENV_FILE} "USER_ID" "$(id -u $USER)"
+#replaceKeyValue ${DOCKER_ENV_FILE} "GROUP_ID" "$(id -g $USER)"
+
+###################################################
+#### ---- Get "Key=Value" withe new value ----
+#### Usage: getKeyValuePair <inFile> <key>
+#### Output: Key=Value
+###################################################
+KeyValuePair=""
+function getKeyValuePair() {
+    KeyValuePair=""
+    inFile=${1:-${DOCKER_ENV_FILE}}
+    keyLike=$2
+    if [ "$2" == "" ]; then
+        echo "**** ERROR: Empty Key value! Abort!"
+        exit 1
+    fi
+    matchedKV=`grep -E "^[[:blank:]]*${keyLike}.+[[:blank:]]*=[[:blank:]]*.+[[:blank:]]*" ${DOCKER_ENV_FILE}`
+    for kv in $matchedKV; do
+        echo "KeyValuePair=${matchedKV// /}"
+    done
+}
+#getKeyValuePair "${DOCKER_ENV_FILE}" "MYSQL_DATABASE"
 
 ## -- transform '-' and space to '_' 
 #instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/\-: " "_"`
 instanceName=`echo $(basename ${imageTag})|tr '[:upper:]' '[:lower:]'|tr "/: " "_"`
 
+################################################
+##### ---- Product Specific Parameters ---- ####
+################################################
+#MYSQL_DATABASE=${MYSQL_DATABASE:-myDB}
+#MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-password}
+#MYSQL_USER=${MYSQL_USER:-user1}
+#MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
+generateProductEnvVars "${ENV_VARIABLE_PATTERN}"
+#### ---- Generate Env. Variables ----
+echo ${ENV_VARS}
+
 echo "---------------------------------------------"
 echo "---- Starting a Container for ${imageTag}"
 echo "---------------------------------------------"
 
-cleanup
+#cleanup
 
 #### run restart options: { no, on-failure, unless-stopped, always }
 RESTART_OPTION=no
@@ -256,9 +311,10 @@ docker run -it \
     ${privilegedString} \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
+    ${ENV_VARS} \
     ${VOLUME_MAP} \
     ${PORT_MAP} \
     ${imageTag} $*
 
-cleanup
+#cleanup
 

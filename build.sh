@@ -52,6 +52,27 @@ function generateBuildArgs() {
     done
 }
 generateBuildArgs
+
+###################################################
+#### ---- Setup Docker Build Proxy ----
+###################################################
+# export NO_PROXY="localhost,127.0.0.1,.openkbs.org"
+# export HTTP_PROXY="http://gatekeeper-w.openkbs.org:80"
+if [ "${HTTP_PROXY}" != "" ]; then
+    HTTP_PROXY_PARAM="--no-check-certificate --build-arg http_proxy=${HTTP_PROXY} --build-arg https_proxy=${HTTP_PROXY}"
+else
+    HTTP_PROXY_PARAM=
+fi
+if [ "${NO_PROXY}" != "" ]; then
+    HTTP_PROXY_PARAM="${HTTP_PROXY_PARAM} --build-arg no_proxy=${NO_PROXY}"
+else
+    HTTP_PROXY_PARAM=${HTTP_PROXY_PARAM}
+fi
+
+###################################################
+#### ---- Final Build args ---- 
+###################################################
+BUILD_ARGS="${BUILD_ARGS} ${HTTP_PROXY_PARAM}"
 echo "BUILD_ARGS=${BUILD_ARGS}"
 
 ###################################################
