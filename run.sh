@@ -297,7 +297,7 @@ echo "---------------------------------------------"
 echo "---- Starting a Container for ${imageTag}"
 echo "---------------------------------------------"
 
-#cleanup
+cleanup
 
 #### run restart options: { no, on-failure, unless-stopped, always }
 RESTART_OPTION=no
