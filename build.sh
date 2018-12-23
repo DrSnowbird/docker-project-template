@@ -6,7 +6,7 @@
 
 if [ $# -lt 1 ]; then
     echo "Usage: "
-    echo "  ${0} <Dockerfile>"
+    echo "  ${0} [<Dockerfile> <imageTag>]"
 fi
 MY_DIR=$(dirname "$(readlink -f "$0")")
 
@@ -41,7 +41,7 @@ detectDockerEnvFile
 #### ---- Container package information ----
 ###################################################
 DOCKER_IMAGE_REPO=`echo $(basename $PWD)|tr '[:upper:]' '[:lower:]'|tr "/: " "_" `
-imageTag=${1:-"${ORGANIZATION}/${DOCKER_IMAGE_REPO}"}
+imageTag=${2:-"${ORGANIZATION}/${DOCKER_IMAGE_REPO}"}
 
 ###################################################
 #### ---- Generate build-arg arguments ----
@@ -91,6 +91,8 @@ echo "BUILD_ARGS=${BUILD_ARGS}"
 ###################################################
 #### ---- Buidl Container ----
 ###################################################
+
+echo "========> imageTag: ${imageTag}"
 docker build --rm -t ${imageTag} \
     ${BUILD_ARGS} \
 	-f `pwd`/${DOCKERFILE} .
