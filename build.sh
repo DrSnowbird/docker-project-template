@@ -55,7 +55,7 @@ BUILD_ARGS="--build-arg BUILD_DATE=${BUILD_DATE} --build-arg VCS_REF=${VCS_REF}"
 ## -- ignore entries start with "#" symbol --
 function generateBuildArgs() {
     for r in `cat ${DOCKER_ENV_FILE} | grep -v '^#'`; do
-        echo "entry=$r"
+        echo "entry=> $r"
         key=`echo $r | tr -d ' ' | cut -d'=' -f1`
         value=`echo $r | tr -d ' ' | cut -d'=' -f2`
         BUILD_ARGS="${BUILD_ARGS} --build-arg $key=$value"
@@ -71,22 +71,22 @@ echo "BUILD_ARGS=${BUILD_ARGS}"
 # export HTTP_PROXY="http://gatekeeper-w.openkbs.org:80"
 # when using "wget", add "--no-check-certificate" to avoid https certificate checking failures
 #
-HTTP_PROXY_PARAM=
+echo "... Setup Docker Build Proxy: ..."
+PROXY_PARAM=
 function generateProxyArgs() {
     if [ "${HTTP_PROXY}" != "" ]; then
-        HTTP_PROXY_PARAM="--build-arg http_proxy=${HTTP_PROXY} --build-arg https_proxy=${HTTP_PROXY}"
-    else
-        HTTP_PROXY_PARAM=
+        PROXY_PARAM="${PROXY_PARAM} --build-arg HTTP_PROXY=${HTTP_PROXY}"
+    fi
+    if [ "${HTTPS_PROXY}" != "" ]; then
+        PROXY_PARAM="${PROXY_PARAM} --build-arg HTTPS_PROXY=${HTTPS_PROXY}"
     fi
     if [ "${NO_PROXY}" != "" ]; then
-        HTTP_PROXY_PARAM="${HTTP_PROXY_PARAM} --build-arg no_proxy=${NO_PROXY}"
-    else
-        HTTP_PROXY_PARAM=${HTTP_PROXY_PARAM}
+        PROXY_PARAM="${PROXY_PARAM} --build-arg NO_PROXY=\"${NO_PROXY}\""
     fi
-    BUILD_ARGS="${BUILD_ARGS} ${HTTP_PROXY_PARAM}"
+    BUILD_ARGS="${BUILD_ARGS} ${PROXY_PARAM}"
 }
 generateProxyArgs
-echo "BUILD_ARGS=${BUILD_ARGS}"
+echo "BUILD_ARGS=> ${BUILD_ARGS}"
 
 ###################################################
 #### ---- Buidl Container ----

@@ -68,6 +68,6 @@ WORKDIR ${HOME}
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 #### (Test only)
-#CMD ["/usr/bin/firefox"]
+CMD ["/usr/bin/firefox"]
 #CMD ["/bin/bash"]
 
