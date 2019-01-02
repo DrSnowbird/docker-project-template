@@ -33,14 +33,13 @@ Dockerfile, docker-compose.yaml, or docker.env (if you need to modify docker env
 5. (optional) Modify "build.sh" and "run.sh" if needed to change any of these two scripts - expert only!
 6. Add any Volumes you want auto mapping between Host and Docker Container: add volume entries in "docker.env" files - the file has explanation text in it. For example, to create two mapping of volumes, "data" and "workspace", 
 ```
-## Rider configuration for run.sh ####
-# - Use "#VOLUMES" and "#PORTS" to indicate that the variables for run.sh"
-# - To ignore line, use "##" (double) in the beginning, 
-#     e.g. "##VOLUMES" and "##PORTS"
-# - To indicate that the variables for run.sh", use only one "#",  
-#     e.g. "#VOLUMES" and "#PORTS"
+##- Rider configuration for run.sh ####
+##- Use "#VOLUMES" and "#PORTS" to indicate that the variables for run.sh"
+##-To ignore line, use "##" (double) in the beginning, 
+##-  e.g. "##VOLUMES" and "##PORTS"
+##-  - To indicate that the variables for run.sh", use only one "#",  
+##-     e.g. "#VOLUMES" and "#PORTS"
 #VOLUMES_LIST="data workspace"
-
 ```
 Then, you are ready to build and run (see below).
 
