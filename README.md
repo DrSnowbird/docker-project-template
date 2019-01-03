@@ -81,3 +81,33 @@ Scripts under ./bin have several useful bash scripts to jump start what you need
 # Docker Finer-grained Access Control 
 Docker is a software that allows to run applications inside of isolated containers. Docker can associate a seccomp profile with the container using the **--security-opt** parameter. Using OPA, you can easily have finer-grained access control.
 * [OpenPolicyAgent OPA](https://www.openpolicyagent.org/docs/docker-authorization.html)
+
+# Setup Dockerfile Build behind Corporate Proxies
+* See [Docker Proxy](https://docs.docker.com/engine/reference/commandline/cli/ https://docs.docker.com/network/proxy/)
+
+For corporate with proxies, to build the images, you need to setup proxy. The better way to setup proxy for docker build and daemon is to use configuration file and there is no need to change the Dockerfile to contain your proxies setup.
+
+With new feature in docker option --config, you needn't set Proxy in Dockerfile any more.
+
+--config string : Location of client config files (default **"~/.docker/config.json"**)
+or environment variable DOCKER_CONFIG
+
+`DOCKER_CONFIG` : The location of your client configuration files.
+
+$ export DOCKER_CONFIG=~/.docker/config.json
+It is recommended to set proxy with httpProxy, httpsProxy and ftpProxy in "**~/.docker/config.json**". You need to adjust the DNS proxy hostname accordign to your specifics of your corporate proxy.
+```
+{
+ "proxies":
+ {
+   "default":
+   {
+     "httpProxy": "http://proxy.openkbs.org:3001",
+     "httpsProxy": "http://proxy.openkbs.org:3001",
+     "ftpProxy": "http://proxy.openkbs.org:3001",
+     "noProxy": "127.0.0.1,localhost,.openkbs.org"
+   }
+ }
+}
+```
+Adjust proxy IP and port if needed and save to ~/.docker/config.json

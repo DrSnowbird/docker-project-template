@@ -89,7 +89,7 @@ generateProxyArgs
 echo "BUILD_ARGS=> ${BUILD_ARGS}"
 
 ###################################################
-#### ---- Buidl Container ----
+#### ---- Build Container ----
 ###################################################
 
 echo "========> imageTag: ${imageTag}"
