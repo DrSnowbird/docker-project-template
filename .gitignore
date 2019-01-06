@@ -3,3 +3,10 @@
 *\~
 *.swp
 .fuse*
+
+*tmp
+*.tar.gz
+*.tgz
+*.zip
+*.tar
+

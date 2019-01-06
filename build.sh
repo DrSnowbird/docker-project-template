@@ -10,7 +10,8 @@ if [ $# -lt 1 ]; then
 fi
 MY_DIR=$(dirname "$(readlink -f "$0")")
 
-DOCKERFILE=${1:-Dockerfile}
+DOCKERFILE=${1:-./Dockerfile}
+DOCKERFILE=$(realpath $DOCKERFILE)
 
 ###################################################
 #### ---- Change this only if want to use your own
@@ -92,10 +93,11 @@ echo "BUILD_ARGS=> ${BUILD_ARGS}"
 #### ---- Build Container ----
 ###################################################
 
+set -x
 echo "========> imageTag: ${imageTag}"
 docker build --rm -t ${imageTag} \
     ${BUILD_ARGS} \
-	-f `pwd`/${DOCKERFILE} .
+	-f ${DOCKERFILE} .
 
 echo "----> Shell into the Container in interactive mode: "
 echo "  docker exec -it --name <some-name> /bin/bash"
