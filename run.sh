@@ -10,6 +10,12 @@ if [ $# -lt 1 ]; then
 fi
 
 ###########################################################################
+## -- docker-compose or docker-stack use only --
+###########################################################################
+## -- (this script will include ./.env only if "./docker-run.env" not found
+DOCKER_ENV_FILE="./docker-run.env"
+
+###########################################################################
 #### (Optional - if you want add Environmental Variable for Running Docker)
 ###########################################################################
 ENV_VARIABLE_PATTERN=""
@@ -68,24 +74,32 @@ LOCAL_VOLUME_DIR="${baseDataFolder}/${PACKAGE}"
 DOCKER_VOLUME_DIR="/home/developer"
 
 ###################################################
-#### ---- Detect docker ----
+#### ---- Detect Docker Run Env files ----
 ###################################################
-DOCKER_ENV_FILE="./.env"
+
 function detectDockerEnvFile() {
     curr_dir=`pwd`
-    if [ -s "./.env" ]; then
-        echo "--- INFO: ./.env Docker Environment file (.env) FOUND!"
-        DOCKER_ENV_FILE="./.env"
+    if [ -s "${DOCKER_ENV_FILE}" ]; then
+        echo "--- INFO: Docker Run Environment file '${DOCKER_ENV_FILE}' FOUND!"
     else
-        echo "--- INFO: ./.env Docker Environment file (.env) NOT found!"
-        if [ -s "./docker.env" ]; then
-            DOCKER_ENV_FILE="./docker.env"
+        echo "*** WARNING: Docker Run Environment file '${DOCKER_ENV_FILE}' NOT found!"
+        echo "*** WARNING: Searching for .env or docker.env as alternative!"
+        echo "*** --->"
+        if [ -s "./.env" ]; then
+            echo "--- INFO: ./.env FOUND to use as Docker Run Environment file!"
+            DOCKER_ENV_FILE="./.env"
         else
-            echo "*** WARNING: Docker Environment file (.env) or (docker.env) NOT found!"
+            echo "--- INFO: ./.env Docker Environment file (.env) NOT found!"
+            if [ -s "./docker.env" ]; then
+                echo "--- INFO: ./docker.env FOUND to use as Docker Run Environment file!"
+                DOCKER_ENV_FILE="./docker.env"
+            else
+                echo "*** WARNING: Docker Environment file (.env) or (docker.env) NOT found!"
+            fi
         fi
     fi
 }
-detectDockerEnvFile
+detectDockerRunEnvFile
 
 ###################################################
 #### ---- Function: Generate volume mappings  ----
@@ -187,7 +201,7 @@ echo ${PORT_MAP}
 #### ---- Generate Environment Variables       ----
 ###################################################
 ENV_VARS=""
-function generateProductEnvVars() {
+function generateEnvVars() {
     ## -- product key patterns, e.g., "^MYSQL_*"
     #productEnvVars=`grep -E "^[[:blank:]]*$1[a-zA-Z0-9_]+[[:blank:]]*=[[:blank:]]*[a-zA-Z0-9_]+[[:blank:]]*" ${DOCKER_ENV_FILE}`
     productEnvVars=`grep -E "^[[:blank:]]*$1.+[[:blank:]]*=[[:blank:]]*.+[[:blank:]]*" ${DOCKER_ENV_FILE} | grep -v "^#"`
@@ -204,7 +218,7 @@ function generateProductEnvVars() {
         fi
     done
 }
-generateProductEnvVars "${ENV_VARIABLE_PATTERN}"
+generateEnvVars "${ENV_VARIABLE_PATTERN}"
 echo "ENV_VARS="$ENV_VARS
 
 ###################################################
@@ -340,19 +354,27 @@ cleanup
 #### run restart options: { no, on-failure, unless-stopped, always }
 RESTART_OPTION=no
 
-echo ${DISPLAY}
+###########################################
+## -- VNC_RESOLUTION setup default --- ####
+###########################################
+if [ `echo $ENV_VAR|grep VNC_RESOLUTION` ]; then
+    #VNC_RESOLUTION="1280x1024"
+    VNC_RESOLUTION="1920x1080"
+    ENV_VARS="${ENV_VARS} -e VNC_RESOLUTION=${VNC_RESOLUTION}" 
+fi
 
-DISPLAY=${MY_IP}:0 \
+#########################
+## -- Docker Run --- ####
+#########################
+set -x
+
 docker run -it \
     --name=${instanceName} \
     --restart=${RESTART_OPTION} \
     ${privilegedString} \
-    -e DISPLAY=$DISPLAY \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
     ${ENV_VARS} \
     ${VOLUME_MAP} \
     ${PORT_MAP} \
     ${imageTag} $*
 
-#cleanup
 

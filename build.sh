@@ -22,8 +22,12 @@ DOCKERFILE=$(realpath $DOCKERFILE)
 
 imageTag=${2}
 
-shift 2
-options="$*"
+if [ $# -get 2 ]; then
+    shift 2
+    options="$*"
+else 
+    options=""
+fi
 
 ###################################################
 #### ---- Change this only if want to use your own
