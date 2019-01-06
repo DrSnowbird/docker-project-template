@@ -1,17 +1,29 @@
-#!/bin/bash
+#!/bin/bash -x
+
+set -x
 
 # Reference: 
 # - https://docs.docker.com/engine/userguide/containers/dockerimages/
 # - https://github.com/dockerfile/java/blob/master/oracle-java8/Dockerfile
 
 if [ $# -lt 1 ]; then
+    echo "-------------------------------------------------------------------------------------------"
     echo "Usage: "
     echo "  ${0} [<Dockerfile> <imageTag>]"
+    echo "e.g."
+    echo "  ./build.sh ./centos/Dockerfile.centos.xfce.vnc openkbs/centos-xfce-vnc --no-cache  --build-arg OS_TYPE=centos'"
+    echo "  ./build.sh ./Dockerfile.ubuntu.xfce.vnc openkbs/ubuntu-xfce-vnc --no-cache  --build-arg OS_TYPE=centos'"
+    echo "-------------------------------------------------------------------------------------------"
 fi
 MY_DIR=$(dirname "$(readlink -f "$0")")
 
 DOCKERFILE=${1:-./Dockerfile}
 DOCKERFILE=$(realpath $DOCKERFILE)
+
+imageTag=${2}
+
+shift 2
+options="$*"
 
 ###################################################
 #### ---- Change this only if want to use your own
@@ -42,7 +54,7 @@ detectDockerEnvFile
 #### ---- Container package information ----
 ###################################################
 DOCKER_IMAGE_REPO=`echo $(basename $PWD)|tr '[:upper:]' '[:lower:]'|tr "/: " "_" `
-imageTag=${2:-"${ORGANIZATION}/${DOCKER_IMAGE_REPO}"}
+imageTag=${imageTag:-"${ORGANIZATION}/${DOCKER_IMAGE_REPO}"}
 
 ###################################################
 #### ---- Generate build-arg arguments ----
@@ -97,7 +109,8 @@ set -x
 echo "========> imageTag: ${imageTag}"
 docker build --rm -t ${imageTag} \
     ${BUILD_ARGS} \
-	-f ${DOCKERFILE} .
+    ${options} \
+    -f ${DOCKERFILE} .
 
 echo "----> Shell into the Container in interactive mode: "
 echo "  docker exec -it --name <some-name> /bin/bash"
