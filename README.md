@@ -86,6 +86,7 @@ Scripts under ./bin have several useful bash scripts to jump start what you need
 # References & Resources
 * [Docker ARG and ENV Guide](https://vsupalov.com/docker-arg-env-variable-guide/)
 * [Docker SECCOMP](https://en.wikipedia.org/wiki/Seccomp)
+* [Docker Proxy setup](https://docs.docker.com/network/proxy/)
 
 # Docker Finer-grained Access Control 
 Docker is a software that allows to run applications inside of isolated containers. Docker can associate a seccomp profile with the container using the **--security-opt** parameter. Using OPA, you can easily have finer-grained access control.
