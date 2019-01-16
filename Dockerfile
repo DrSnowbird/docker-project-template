@@ -29,7 +29,8 @@ LABEL org.label-schema.url="https://imagelayers.io" \
       org.label-schema.schema-version="1.0"
       
 RUN echo PRODUCT=${PRODUCT} && echo HOME=$HOME && \
-    sudo apt install -y firefox
+    sudo apt-get install dbus-x11 x-forwarding && \
+    sudo apt-get install -y firefox
 
 #### --- Copy Entrypoint script in the container ---- ####
 COPY ./docker-entrypoint.sh /
@@ -37,30 +38,30 @@ COPY ./docker-entrypoint.sh /
 #### ------------------------
 #### ---- user: Non-Root ----
 #### ------------------------
-#ENV USER_NAME=${USER_NAME:-developer}
-#ENV HOME=/home/${USER_NAME}
 
-#ARG USER_ID=${USER_ID:-1000}
-#ENV USER_ID=${USER_ID}
+ENV USER=${USER:-developer}
+ENV USER_NAME=${USER}
 
-#ARG GROUP_ID=${GROUP_ID:-1000}
-#ENV GROUP_ID=${GROUP_ID}
+ENV HOME=/home/${USER}
 
-#RUN \
-#    groupadd -g ${GROUP_ID} ${USER_NAME} && \
-#    useradd -d ${HOME} -s /bin/bash -u ${USER_ID} -g ${USER_NAME} ${USER_NAME} && \
-#    usermod -aG root ${USER_NAME} && \
-#    export uid=${USER_ID} gid=${GROUP_ID} && \
-#    mkdir -p ${HOME} && \
-#    mkdir -p ${HOME}/workspace && \
-#    mkdir -p /etc/sudoers.d && \
-#    echo "${USER_NAME}:x:${USER_ID}:${GROUP_ID}:${USER_NAME},,,:${HOME}:/bin/bash" >> /etc/passwd && \
-#    echo "${USER_NAME}:x:${USER_ID}:" >> /etc/group && \
-#    echo "${USER_NAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${USER_NAME} && \
-#    chmod 0440 /etc/sudoers.d/${USER_NAME} && \
-#    chown ${USER_NAME}:${USER_NAME} -R ${HOME} && \
-#    apt-get clean all
+RUN groupadd -f --gid ${GROUP_ID} ${USER} && \
+    #useradd ${USER} -m -d ${HOME} -s /bin/bash -u ${USER_ID} -g ${GROUP_ID} && \
+    useradd ${USER} -m -d ${HOME} -s /bin/bash -u ${USER_ID} -g ${USER} && \
+    ## -- Ubuntu -- \
+    usermod -aG sudo ${USER} && \
+    ## -- Centos -- \
+    #usermod -aG wheel ${USER} && \
+    echo "${USER} ALL=NOPASSWD:ALL" | tee -a /etc/sudoers && \
+    export uid=${USER_ID} gid=${GROUP_ID} && \
+    chown ${USER}:${USER} -R ${HOME}
     
+RUN mkdir -p ${HOME}/workspace && \
+    chown ${USER}:${USER} -R ${HOME}/workspace
+
+WORKDIR ${HOME}
+
+USER ${USER}
+
 #### --- Enterpoint for container ---- ####
 USER ${USER_NAME}
 WORKDIR ${HOME}
@@ -69,5 +70,6 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 
 #### (Test only)
 CMD ["/usr/bin/firefox"]
+#CMD ["startx /usr/bin/firefox"]
 #CMD ["/bin/bash"]
 

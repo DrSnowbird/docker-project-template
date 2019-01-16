@@ -85,16 +85,21 @@ function detectDockerEnvFile() {
         echo "*** WARNING: Docker Run Environment file '${DOCKER_ENV_FILE}' NOT found!"
         echo "*** WARNING: Searching for .env or docker.env as alternative!"
         echo "*** --->"
-        if [ -s "./.env" ]; then
-            echo "--- INFO: ./.env FOUND to use as Docker Run Environment file!"
-            DOCKER_ENV_FILE="./.env"
+        if [ -s "./docker-run.env" ]; then
+            echo "--- INFO: ./docker-run.env FOUND to use as Docker Run Environment file!"
+            DOCKER_ENV_FILE="./docker-run.env"
         else
-            echo "--- INFO: ./.env Docker Environment file (.env) NOT found!"
-            if [ -s "./docker.env" ]; then
-                echo "--- INFO: ./docker.env FOUND to use as Docker Run Environment file!"
-                DOCKER_ENV_FILE="./docker.env"
+            if [ -s "./.env" ]; then
+                echo "--- INFO: ./.env FOUND to use as Docker Run Environment file!"
+                DOCKER_ENV_FILE="./.env"
             else
-                echo "*** WARNING: Docker Environment file (.env) or (docker.env) NOT found!"
+                echo "--- INFO: ./.env Docker Environment file (.env) NOT found!"
+                if [ -s "./docker.env" ]; then
+                    echo "--- INFO: ./docker.env FOUND to use as Docker Run Environment file!"
+                    DOCKER_ENV_FILE="./docker.env"
+                else
+                    echo "*** WARNING: Docker Environment file (.env) or (docker.env) NOT found!"
+                fi
             fi
         fi
     fi
@@ -368,13 +373,26 @@ fi
 #########################
 set -x
 
+#docker run -it \
+#    --name=${instanceName} \
+#    --restart=${RESTART_OPTION} \
+#    ${privilegedString} \
+#    ${ENV_VARS} \
+#    ${VOLUME_MAP} \
+#    ${PORT_MAP} \
+#    ${imageTag} $*
+
+echo ${DISPLAY}
+xhost +SI:localuser:$(id -un) 
+DISPLAY=${MY_IP}:0 \
 docker run -it \
     --name=${instanceName} \
     --restart=${RESTART_OPTION} \
     ${privilegedString} \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    --user $(id -u $USER) \
     ${ENV_VARS} \
     ${VOLUME_MAP} \
     ${PORT_MAP} \
     ${imageTag} $*
-
-

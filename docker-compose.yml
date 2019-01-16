@@ -1,9 +1,11 @@
 version: '3' 
+
 services:
   docker-project-template:
     image: openkbs/docker-project-template
     build:
-      context: ./Dockerfile
+      context: .
+      dockerfile: Dockerfile
     container_name: docker-project-template
     environment:
       - USER_ID=${USER_ID:-1000}
