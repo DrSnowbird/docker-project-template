@@ -27,4 +27,5 @@ RUN \
     wget -O ${CERTIFICATE_DIR}/openkbs-BA-Root.crt http://pki.openkbs.org/openkbs-BA-Root.crt && \
     wget -O ${CERTIFICATE_DIR}/openkbs-BA-NPE-CA-3.crt http://pki.openkbs.org/openkbs-BA-NPE-CA-3.crt && \
     wget -O ${CERTIFICATE_DIR}/openkbs-BA-NPE-CA-4.crt http://pki.openkbs.org/openkbs-BA-NPE-CA-4.crt && \
-    update-ca-certificates
+    update-ca-certificates # (for Ubuntu OS)
+    # update-ca-trust extract # (for CentOS OS)
