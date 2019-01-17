@@ -29,7 +29,7 @@ LABEL org.label-schema.url="https://imagelayers.io" \
       org.label-schema.schema-version="1.0"
       
 RUN echo PRODUCT=${PRODUCT} && echo HOME=$HOME && \
-    sudo apt-get install dbus-x11 x-forwarding && \
+    sudo apt-get install dbus-x11 && \
     sudo apt-get install -y firefox
 
 #### --- Copy Entrypoint script in the container ---- ####

@@ -1,6 +1,6 @@
-#!/bin/bash -x
+#!/bin/bash
 
-set -x
+set -e
 
 # Reference: 
 # - https://docs.docker.com/engine/userguide/containers/dockerimages/
@@ -9,12 +9,13 @@ set -x
 if [ $# -lt 1 ]; then
     echo "-------------------------------------------------------------------------------------------"
     echo "Usage: "
-    echo "  ${0} [<Dockerfile> <imageTag>]"
+    echo "  ${0} [<Dockerfile> <imageTag> [<some more optional arguments...>] ] "
     echo "e.g."
     echo "  ./build.sh ./centos/Dockerfile.centos.xfce.vnc openkbs/centos-xfce-vnc --no-cache  --build-arg OS_TYPE=centos'"
     echo "  ./build.sh ./Dockerfile.ubuntu.xfce.vnc openkbs/ubuntu-xfce-vnc --no-cache  --build-arg OS_TYPE=centos'"
     echo "-------------------------------------------------------------------------------------------"
 fi
+
 MY_DIR=$(dirname "$(readlink -f "$0")")
 
 DOCKERFILE=${1:-./Dockerfile}
@@ -22,7 +23,7 @@ DOCKERFILE=$(realpath $DOCKERFILE)
 
 imageTag=${2}
 
-if [ $# -get 2 ]; then
+if [ $# -gt 2 ]; then
     shift 2
     options="$*"
 else 
@@ -35,24 +36,37 @@ fi
 ORGANIZATION=openkbs
 
 ###################################################
-#### ---- Detect docker ----
+#### ---- Detect Docker Run Env files ----
 ###################################################
-DOCKER_ENV_FILE="./.env"
-function detectDockerEnvFile() {
+
+function detectDockerBuildEnvFile() {
     curr_dir=`pwd`
-    if [ -s "./.env" ]; then
-        echo "--- INFO: ./.env Docker Environment file (.env) FOUND!"
-        DOCKER_ENV_FILE="./.env"
+    if [ -s "${DOCKER_ENV_FILE}" ]; then
+        echo "--- INFO: Docker Build Environment file '${DOCKER_ENV_FILE}' FOUND!"
     else
-        echo "--- INFO: ./.env Docker Environment file (.env) NOT found!"
-        if [ -s "./docker.env" ]; then
-            DOCKER_ENV_FILE="./docker.env"
+        echo "*** WARNING: Docker Build Environment file '${DOCKER_ENV_FILE}' NOT found!"
+        echo "*** WARNING: Searching for .env or docker.env as alternative!"
+        echo "*** --->"
+        if [ -s "./docker-build.env" ]; then
+            echo "--- INFO: ./docker-build.env FOUND to use as Docker Run Environment file!"
+            DOCKER_ENV_FILE="./docker-build.env"
         else
-            echo "*** WARNING: Docker Environment file (.env) or (docker.env) NOT found!"
+            if [ -s "./.env" ]; then
+                echo "--- INFO: ./.env FOUND to use as Docker Run Environment file!"
+                DOCKER_ENV_FILE="./.env"
+            else
+                echo "--- INFO: ./.env Docker Environment file (.env) NOT found!"
+                if [ -s "./docker.env" ]; then
+                    echo "--- INFO: ./docker.env FOUND to use as Docker Run Environment file!"
+                    DOCKER_ENV_FILE="./docker.env"
+                else
+                    echo "*** WARNING: Docker Environment file (.env) or (docker.env) NOT found!"
+                fi
+            fi
         fi
     fi
 }
-detectDockerEnvFile
+detectDockerBuildEnvFile
 
 ###################################################
 #### ---- Container package information ----
@@ -100,6 +114,15 @@ function generateProxyArgs() {
     if [ "${NO_PROXY}" != "" ]; then
         PROXY_PARAM="${PROXY_PARAM} --build-arg NO_PROXY=\"${NO_PROXY}\""
     fi
+    if [ "${http_proxy}" != "" ]; then
+        PROXY_PARAM="${PROXY_PARAM} --build-arg HTTP_PROXY=${http_proxy}"
+    fi
+    if [ "${https_proxy}" != "" ]; then
+        PROXY_PARAM="${PROXY_PARAM} --build-arg HTTPS_PROXY=${https_proxy}"
+    fi
+    if [ "${no_proxy}" != "" ]; then
+        PROXY_PARAM="${PROXY_PARAM} --build-arg NO_PROXY=\"${no_proxy}\""
+    fi
     BUILD_ARGS="${BUILD_ARGS} ${PROXY_PARAM}"
 }
 generateProxyArgs
@@ -115,6 +138,7 @@ docker build --rm -t ${imageTag} \
     ${BUILD_ARGS} \
     ${options} \
     -f ${DOCKERFILE} .
+set +x
 
 echo "----> Shell into the Container in interactive mode: "
 echo "  docker exec -it --name <some-name> /bin/bash"
