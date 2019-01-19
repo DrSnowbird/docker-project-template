@@ -16,11 +16,8 @@ fi
 ## -- Change to one (1) if run.sh needs to support VNC/NoVNC-based the Container -- ##
 VNC_BUILD=0
 
-## -- Change to one (1) if run.sh needs to support X11-based/Desktop the Container -- ##
-X11_NEEDED=0
-
 ## -- Change to one (1) if run.sh needs to support host's user to run the Container -- ##
-USER_VARS_NEEDED=0
+USER_VARS_NEEDED=1
 
 ###########################################################################
 ## -- docker-compose or docker-stack use only --
@@ -397,6 +394,8 @@ fi
 #      VNC_BUILD=1
 # fi
 
+set -x
+
 if [ $VNC_BUILD -gt 0 ]; then
     #### ----------------------------------- ####
     #### -- VNC_RESOLUTION setup default --- ####
@@ -406,27 +405,28 @@ if [ $VNC_BUILD -gt 0 ]; then
         VNC_RESOLUTION=1920x1080
         ENV_VARS="${ENV_VARS} -e VNC_RESOLUTION=${VNC_RESOLUTION}" 
     fi
+	docker run -it \
+	    --name=${instanceName} \
+	    --restart=${RESTART_OPTION} \
+	    ${privilegedString} \
+	    ${ENV_VARS} \
+	    ${VOLUME_MAP} \
+	    ${PORT_MAP} \
+	    ${imageTag} $*
 else
-    #### ---- for Non-VNC or X11-based ---- ####
-    if [ ${X11_NEEDED} -gt 0 ]; then
-        echo ${DISPLAY}
-        xhost +SI:localuser:$(id -un) 
-        DISPLAY=${MY_IP}:0
-        VOLUME_MAP="${VOLUME_MAP} -v /tmp/.X11-unix:/tmp/.X11-unix"
-        ENV_VARS="${ENV_VARS} -e DISPLAY=$DISPLAY "
-    fi
+    #### ---- for X11-based ---- ####
+    echo ${DISPLAY}
+    xhost +SI:localuser:$(id -un) 
+    DISPLAY=${MY_IP}:0 \
+    docker run -it \
+        --name=${instanceName} \
+        --restart=${RESTART_OPTION} \
+        ${privilegedString} \
+        -e DISPLAY=$DISPLAY \
+        -v /tmp/.X11-unix:/tmp/.X11-unix \
+        ${USER_VARS} \
+        ${ENV_VARS} \
+        ${VOLUME_MAP} \
+        ${PORT_MAP} \
+        ${imageTag} $*
 fi
-echo "==> ENV_VARS=${ENV_VARS}"
-echo "==> VOLUME_MAPENV_VARS=${ENV_VARS}"
-
-set -x
-
-docker run -it \
-    --name=${instanceName} \
-    --restart=${RESTART_OPTION} \
-    ${privilegedString} \
-    ${ENV_VARS} \
-    ${VOLUME_MAP} \
-    ${PORT_MAP} \
-    ${imageTag} $*
-

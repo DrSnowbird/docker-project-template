@@ -44,17 +44,6 @@ ENV USER_NAME=${USER}
 
 ENV HOME=/home/${USER}
 
-RUN groupadd -f --gid ${GROUP_ID} ${USER} && \
-    #useradd ${USER} -m -d ${HOME} -s /bin/bash -u ${USER_ID} -g ${GROUP_ID} && \
-    useradd ${USER} -m -d ${HOME} -s /bin/bash -u ${USER_ID} -g ${USER} && \
-    ## -- Ubuntu -- \
-    usermod -aG sudo ${USER} && \
-    ## -- Centos -- \
-    #usermod -aG wheel ${USER} && \
-    echo "${USER} ALL=NOPASSWD:ALL" | tee -a /etc/sudoers && \
-    export uid=${USER_ID} gid=${GROUP_ID} && \
-    chown ${USER}:${USER} -R ${HOME}
-    
 RUN mkdir -p ${HOME}/workspace && \
     chown ${USER}:${USER} -R ${HOME}/workspace
 
