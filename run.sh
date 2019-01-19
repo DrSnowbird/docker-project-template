@@ -16,6 +16,9 @@ fi
 ## -- Change to one (1) if run.sh needs to support VNC/NoVNC-based the Container -- ##
 VNC_BUILD=0
 
+## -- Change to one (1) if run.sh needs to support X11-based the Container -- ##
+X11_BUILD=1
+
 ## -- Change to one (1) if run.sh needs to support host's user to run the Container -- ##
 USER_VARS_NEEDED=1
 
@@ -414,19 +417,31 @@ if [ $VNC_BUILD -gt 0 ]; then
 	    ${PORT_MAP} \
 	    ${imageTag} $*
 else
-    #### ---- for X11-based ---- ####
-    echo ${DISPLAY}
-    xhost +SI:localuser:$(id -un) 
-    DISPLAY=${MY_IP}:0 \
-    docker run -it \
-        --name=${instanceName} \
-        --restart=${RESTART_OPTION} \
-        ${privilegedString} \
-        -e DISPLAY=$DISPLAY \
-        -v /tmp/.X11-unix:/tmp/.X11-unix \
-        ${USER_VARS} \
-        ${ENV_VARS} \
-        ${VOLUME_MAP} \
-        ${PORT_MAP} \
-        ${imageTag} $*
+    if [ ${X11_BUILD} -gt 0 ]; then
+        #### ---- for X11-based ---- ####
+        echo ${DISPLAY}
+        xhost +SI:localuser:$(id -un) 
+        DISPLAY=${MY_IP}:0 \
+        docker run -it \
+            --name=${instanceName} \
+            --restart=${RESTART_OPTION} \
+            ${privilegedString} \
+            -e DISPLAY=$DISPLAY \
+            -v /tmp/.X11-unix:/tmp/.X11-unix \
+            ${USER_VARS} \
+            ${ENV_VARS} \
+            ${VOLUME_MAP} \
+            ${PORT_MAP} \
+            ${imageTag} $*
+    else
+        docker run -it \
+            --name=${instanceName} \
+            --restart=${RESTART_OPTION} \
+            ${privilegedString} \
+            ${USER_VARS} \
+            ${ENV_VARS} \
+            ${VOLUME_MAP} \
+            ${PORT_MAP} \
+            ${imageTag} $*
+    fi
 fi
