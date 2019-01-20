@@ -249,7 +249,9 @@ function generateEnvVars() {
             ENV_VARS_STRING="${ENV_VARS_STRING} ${vars}"
         fi
     done
-    IFS=', ' read -r -a ENV_VARS_ARRAY <<< "$ENV_VARS_STRING"
+    ## IFS default is "space tab newline" already
+    #IFS=',; ' read -r -a ENV_VARS_ARRAY <<< "${ENV_VARS_STRING}"
+    read -r -a ENV_VARS_ARRAY <<< "${ENV_VARS_STRING}"
     # To iterate over the elements:
     for element in "${ENV_VARS_ARRAY[@]}"
     do
