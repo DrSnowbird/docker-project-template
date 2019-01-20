@@ -1,7 +1,7 @@
-#!/bin/bash -x
+#!/bin/bash
 
 set -e
-set -i
+
 env
 
 #### ---- Make sure to provide Non-root user for launching Docker ----

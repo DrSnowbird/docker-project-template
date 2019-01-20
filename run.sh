@@ -1,26 +1,49 @@
 #!/bin/bash
 
+set +x
+
 MY_DIR=$(dirname "$(readlink -f "$0")")
 
 if [ $# -lt 1 ]; then
+    echo "--------------------------------------------------------"
     echo "Usage: "
     echo "  ${0} <container_shell_command>"
     echo "e.g.: "
     echo "  ${0} ls -al "
+    echo "  ${0} /bin/bash "
+    echo "--------------------------------------------------------"
 fi
 
-##########################################################################
-#### ---- RUN Configuration (CHANGE THESE if needed!!!!)          --- ####
-##########################################################################
-
-## -- Change to one (1) if run.sh needs to support VNC/NoVNC-based the Container -- ##
-VNC_BUILD=0
-
-## -- Change to one (1) if run.sh needs to support X11-based the Container -- ##
-X11_BUILD=1
+###########################################################################
+#### ---- RUN Configuration (CHANGE THESE if needed!!!!)           --- ####
+###########################################################################
+## Valid BUILD_TYPE values: 
+## BUILD_TYPE:
+##    0: (default) has neither X11 nor VNC/noVNC container build image type
+##    1: X11/Desktip container build image type
+##    2: VNC/noVNC container build image type
+## ------------------------------------------------------------------------
+BUILD_TYPE=1
 
 ## -- Change to one (1) if run.sh needs to support host's user to run the Container -- ##
 USER_VARS_NEEDED=0
+
+########################################
+#### ---- Usage for BUILD_TYPE ---- ####
+########################################
+function buildTypeUsage() {
+    echo "## ------------------------------------------------------------------------"
+    echo "## Valid BUILD_TYPE values: "
+    echo "##    0: (default) has neither X11 nor VNC/noVNC container build image type"
+    echo "##    1: X11/Desktip container build image type"
+    echo "##    2: VNC/noVNC container build image type"
+    echo "## ------------------------------------------------------------------------"
+}
+
+if [ "${BUILD_TYPE}" -lt 0 ] || [ "${BUILD_TYPE}" -gt 2 ]; then
+    buildTypeUsage
+    exit 1
+fi
 
 ###########################################################################
 ## -- docker-compose or docker-stack use only --
@@ -411,51 +434,60 @@ if [ ${USER_VARS_NEEDED} -gt 0 ]; then
     USER_VARS="--user $(id -u $USER)"
 fi
 
-#################################
-## -- VNC-based Docker build --##
-#################################
-# DETECT_VNC_DOCKER=`cat Dockerfile |grep -E "FROM.*vnc.*"`
-# if [ ! "${DETECT_VNC_DOCKER}" = "" ]; then
-#      VNC_BUILD=1
-# fi
+echo "--------------------------------------------------------"
+echo "==> Commands to manage Container:"
+echo "--------------------------------------------------------"
+echo "  ./shell.sh : to shell into the container"
+echo "  ./stop.sh  : to stop the container"
+echo "  ./log.sh   : to show the docker run log"
+echo "  ./build.sh : to build the container"
+echo "  ./commit.sh: to push the container image to docker hub"
+echo "--------------------------------------------------------"
 
-set -x
-
-if [ $VNC_BUILD -gt 0 ]; then
-    #### ----------------------------------- ####
-    #### -- VNC_RESOLUTION setup default --- ####
-    #### ----------------------------------- ####
-    if [ "`echo $ENV_VARS|grep VNC_RESOLUTION`" = "" ]; then
-        #VNC_RESOLUTION=1280x1024
-        VNC_RESOLUTION=1920x1080
-        ENV_VARS="${ENV_VARS} -e VNC_RESOLUTION=${VNC_RESOLUTION}" 
-    fi
-	docker run -it \
-	    --name=${instanceName} \
-	    --restart=${RESTART_OPTION} \
-	    ${privilegedString} \
-	    ${ENV_VARS} \
-	    ${VOLUME_MAP} \
-	    ${PORT_MAP} \
-	    ${imageTag} $*
-else
-    if [ ${X11_BUILD} -gt 0 ]; then
+case "${BUILD_TYPE}" in
+    0 )
+        ## 0: (default) has neither X11 nor VNC/noVNC container build image type 
+        set -x 
+        docker run -it \
+            --name=${instanceName} \
+            --restart=${RESTART_OPTION} \
+            ${privilegedString} \
+            ${USER_VARS} \
+            ${ENV_VARS} \
+            ${VOLUME_MAP} \
+            ${PORT_MAP} \
+            ${imageTag} $*
+        ;;
+    1)
+        ## 1: X11/Desktip container build image type
         #### ---- for X11-based ---- ####
         echo ${DISPLAY}
         xhost +SI:localuser:$(id -un) 
+        set -x 
         DISPLAY=${MY_IP}:0 \
         docker run -it \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
-            ${privilegedString} \
             -e DISPLAY=$DISPLAY \
             -v /tmp/.X11-unix:/tmp/.X11-unix \
+            ${privilegedString} \
             ${USER_VARS} \
             ${ENV_VARS} \
             ${VOLUME_MAP} \
             ${PORT_MAP} \
             ${imageTag} $*
-    else
+        ;;
+    2)
+        ## 2: VNC/noVNC container build image type
+        #### ----------------------------------- ####
+        #### -- VNC_RESOLUTION setup default --- ####
+        #### ----------------------------------- ####
+        if [ "`echo $ENV_VARS|grep VNC_RESOLUTION`" = "" ]; then
+            #VNC_RESOLUTION=1280x1024
+            VNC_RESOLUTION=1920x1080
+            ENV_VARS="${ENV_VARS} -e VNC_RESOLUTION=${VNC_RESOLUTION}" 
+        fi
+        set -x 
         docker run -it \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
@@ -465,5 +497,11 @@ else
             ${VOLUME_MAP} \
             ${PORT_MAP} \
             ${imageTag} $*
-    fi
-fi
+        ;;
+     *)
+        buildTypeUsage
+        exit 1
+esac
+
+set +x
+
