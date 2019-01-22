@@ -17,16 +17,47 @@ fi
 ###########################################################################
 #### ---- RUN Configuration (CHANGE THESE if needed!!!!)           --- ####
 ###########################################################################
-## Valid BUILD_TYPE values: 
-## BUILD_TYPE:
+## ------------------------------------------------------------------------
+## Valid "BUILD_TYPE" values: 
 ##    0: (default) has neither X11 nor VNC/noVNC container build image type
 ##    1: X11/Desktip container build image type
 ##    2: VNC/noVNC container build image type
 ## ------------------------------------------------------------------------
 BUILD_TYPE=1
 
-## -- Change to one (1) if run.sh needs to support host's user to run the Container -- ##
+## ------------------------------------------------------------------------
+## Valid "RUN_TYPE" values: 
+##    0: (default) Interactive Container -
+##       ==> Best for Debugging Use
+##    1: Detach Container / Non-Interactive 
+##       ==> Usually, when not in debugging mode anymore, then use 1 as choice.
+##       ==> Or, your frequent needs of the container for DEV environment Use.
+## ------------------------------------------------------------------------
+RUN_TYPE=0
+
+## ------------------------------------------------------------------------
+## Change to one (1) if run.sh needs to use host's user/group to run the Container
+## Valid "USER_VARS_NEEDED" values: 
+##    0: (default) Not using host's USER / GROUP ID
+##    1: Yes, using host's USER / GROUP ID for Container running.
+## ------------------------------------------------------------------------
 USER_VARS_NEEDED=0
+
+## ------------------------------------------------------------------------
+## Valid "RESTART_OPTION" values:
+##  { no, on-failure, unless-stopped, always }
+## ------------------------------------------------------------------------
+RESTART_OPTION=no
+
+###############################################################################
+###############################################################################
+###############################################################################
+#### ---- DO NOT Change the code below UNLESS you really want to !!!!) --- ####
+#### ---- DO NOT Change the code below UNLESS you really want to !!!!) --- ####
+#### ---- DO NOT Change the code below UNLESS you really want to !!!!) --- ####
+###############################################################################
+###############################################################################
+###############################################################################
 
 ########################################
 #### ---- Usage for BUILD_TYPE ---- ####
@@ -44,6 +75,29 @@ if [ "${BUILD_TYPE}" -lt 0 ] || [ "${BUILD_TYPE}" -gt 2 ]; then
     buildTypeUsage
     exit 1
 fi
+
+########################################
+#### ---- Validate RUN_TYPE    ---- ####
+########################################
+RUN_OPTION=${RUN_OPTION:-" --rm -it "}
+function validateRunType() {
+    case "${RUN_TYPE}" in
+        0 )
+            RUN_OPTION=" --rm -it"
+            ;;
+        1 )
+            RUN_OPTION=" --rm -d"
+            ;;
+        * )
+            echo "**** ERROR: Incorrect RUN_TYPE: ${RUN_TYPE} is used! Abort ****"
+            exit 1
+            ;;
+    esac
+}
+validateRunType
+echo "RUN_TYPE=${RUN_TYPE}"
+echo "RUN_OPTION=${RUN_OPTION}"
+echo "RESTART_OPTION=${RESTART_OPTION}"
 
 ###########################################################################
 ## -- docker-compose or docker-stack use only --
@@ -445,10 +499,10 @@ echo "  ./commit.sh: to push the container image to docker hub"
 echo "--------------------------------------------------------"
 
 case "${BUILD_TYPE}" in
-    0 )
+    0)
         ## 0: (default) has neither X11 nor VNC/noVNC container build image type 
         set -x 
-        docker run -it \
+        docker run ${RUN_OPTION} \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             ${privilegedString} \
@@ -465,7 +519,7 @@ case "${BUILD_TYPE}" in
         xhost +SI:localuser:$(id -un) 
         set -x 
         DISPLAY=${MY_IP}:0 \
-        docker run -it \
+        docker run ${RUN_OPTION} \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             -e DISPLAY=$DISPLAY \
@@ -488,7 +542,7 @@ case "${BUILD_TYPE}" in
             ENV_VARS="${ENV_VARS} -e VNC_RESOLUTION=${VNC_RESOLUTION}" 
         fi
         set -x 
-        docker run -it \
+        docker run ${RUN_OPTION} \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             ${privilegedString} \
