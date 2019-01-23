@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 set -e
 
@@ -21,12 +21,13 @@ PROC_PATTERN="$(basename {PRODUCT_EXE})"
 
 sleep ${WAIT_SEC}
 
-PID=`ps -elf|grep ${PROC_PATTERN} |grep java |awk '{print $4}' | head -1`
+PID=`ps -elf|grep "${PROC_PATTERN}" | grep -v grep | awk '{print $4}' | head -1`
 
+#### Serveral options to make
 while [ "${PID}" != "" ]
 do
     echo "Process: $PID is still running"
     sleep ${WAIT_SEC}
-    PID=`ps -elf|grep ${PROC_PATTERN} |grep java |awk '{print $4}' | head -1`
+    PID=`ps -elf|grep "${PROC_PATTERN}" | grep -v grep | awk '{print $4}' | head -1`
 done
 #wait ${PID}
