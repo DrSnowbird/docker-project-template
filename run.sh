@@ -50,6 +50,13 @@ USER_VARS_NEEDED=0
 RESTART_OPTION=no
 #RESTART_OPTION=unless-stopped
 
+## ------------------------------------------------------------------------
+## More optional values:
+##   Add any additional options here
+## ------------------------------------------------------------------------
+# MORE_OPTIONS="--privileged=true"
+MORE_OPTIONS=
+
 ###############################################################################
 ###############################################################################
 ###############################################################################
@@ -511,7 +518,7 @@ case "${BUILD_TYPE}" in
     0)
         ## 0: (default) has neither X11 nor VNC/noVNC container build image type 
         set -x 
-        docker run ${REMOVE_OPTION} ${RUN_OPTION} \
+        docker run ${REMOVE_OPTION} ${MORE_OPTIONS} ${RUN_OPTION} \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             ${privilegedString} \
@@ -528,7 +535,7 @@ case "${BUILD_TYPE}" in
         xhost +SI:localuser:$(id -un) 
         set -x 
         DISPLAY=${MY_IP}:0 \
-        docker run ${REMOVE_OPTION} ${RUN_OPTION} \
+        docker run ${REMOVE_OPTION} ${MORE_OPTIONS} ${RUN_OPTION} \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             -e DISPLAY=$DISPLAY \
@@ -551,7 +558,7 @@ case "${BUILD_TYPE}" in
             ENV_VARS="${ENV_VARS} -e VNC_RESOLUTION=${VNC_RESOLUTION}" 
         fi
         set -x 
-        docker run ${REMOVE_OPTION} ${RUN_OPTION} \
+        docker run ${REMOVE_OPTION} ${MORE_OPTIONS} ${RUN_OPTION} \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             ${privilegedString} \
