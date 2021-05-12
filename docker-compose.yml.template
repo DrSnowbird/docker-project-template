@@ -1,0 +1,59 @@
+version: '3.1' 
+
+services:
+  {{CONTAINER_NAME}}:
+    container_name: {{CONTAINER_NAME}}
+    image: {{ORG_NAME}}/{{CONTAINER_NAME}}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      - CONTAINER_NAME={{CONTAINER_NAME}}
+      - USER_ID=${USER_ID:-1000}
+      - GROUP_ID=${GROUP_ID:-1000}
+      # - APP_HOME=${APP_HOME:-/home/developer/app}
+      # - APP_MAIN=${APP_MAIN:-setup.sh}
+      - DOCKER_HOST_IP=${DOCKER_HOST_IP:-{{DOCKER_HOST_IP}}}
+      - DOCKER_HOST_NAME=${DOCKER_HOST_NAME:-{{DOCKER_HOST_NAME}}}
+      # ==== X11 Use only ====
+      - DISPLAY=$DISPLAY
+      - DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
+      # ==== vnc/no-vnc ====
+      #- WINDOW_MANAGER=xfce 
+      #- VNC_RESOLUTION=1280x800 
+      #- VNC_PW=vncpassword 
+    volumes:
+      ## ==== Common mapping ====
+      - /etc/hosts:/etc/hosts
+      - /dev/shm:/dev/shm 
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      #- ./certificates:/home/developer/certificates
+      ## ==== Use $HOME/data-docker as base directory: ====
+      #- $HOME/data-docker/{{CONTAINER_NAME}}/data:/home/developer/data
+      #- $HOME/data-docker/{{CONTAINER_NAME}}/workspace:/home/developer/workspace
+      ## ==== Use current directory as root for mapping Volumes ====
+      ## (You need to manually create those child directory: ./data, ./workspace, and others)
+      - ./data:/home/developer/data
+      - ./workspace:/home/developer/workspace
+ 
+    ## -------------------------------
+    ## -- Change to your specific port
+    ## -------------------------------
+    # ports:
+    #   - "12345:12345"
+
+    ## -----------------------------
+    ## -- Network setup if needed --
+    ## -----------------------------
+    # networks:
+    #  - dev_network
+
+#networks:
+#  dev_network:
+#    external:
+#      name: dev_network
+
+
