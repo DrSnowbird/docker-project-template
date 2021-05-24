@@ -2,6 +2,8 @@
 
 set -e
 
+whoami
+
 env | sort
 
 echo "Inputs: $*"

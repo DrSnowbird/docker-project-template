@@ -714,7 +714,7 @@ case "${BUILD_TYPE}" in
             ${VOLUME_MAP} \
             ${PORT_MAP} \
             ${imageTag} \
-            $*
+            $@
         ;;
     1)
         #### 1: X11/Desktip container build image type
@@ -736,7 +736,7 @@ case "${BUILD_TYPE}" in
             ${VOLUME_MAP} \
             ${PORT_MAP} \
             ${imageTag} \
-            $*
+            $@
         ;;
     2)
         #### 2: VNC/noVNC container build image type
@@ -759,7 +759,7 @@ case "${BUILD_TYPE}" in
             ${VOLUME_MAP} \
             ${PORT_MAP} \
             ${imageTag} \
-            $*
+            $@
         ;;
 
 esac

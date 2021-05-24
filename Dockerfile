@@ -57,7 +57,7 @@ RUN mkdir ${HOME}/bin
 COPY ./bin/create-venv.sh ${HOME}/bin/
 COPY ./bin/setup_venv_bash_profile.sh ${HOME}/bin/
 
-RUN sudo chown -R $USER:$USER ${HOME}/bin && sudo chmod +x ${HOME}/bin/*.sh 
+RUN sudo chown -R $USER:$USER ${HOME} && sudo chmod +x ${HOME}/bin/*.sh 
 RUN ${HOME}/bin/create-venv.sh myvenv
 RUN ${HOME}/bin/setup_venv_bash_profile.sh
 
