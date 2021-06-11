@@ -670,7 +670,22 @@ echo "  ./commit.sh: to push the container image to docker hub"
 echo "--------------------------------------------------------"
 
 #################################
-## ---- Setup X11 Display -_-- ##
+## ---- Detect Media/Sound: -- ##
+#################################
+MEDIA_OPTIONS="--group-add audio "
+#            --device /dev/snd:/dev/snd \
+function detectMedia() {
+    if [ "$1" != "" ]; then
+        if [ -s $1 ]; then
+            # --device /dev/snd:/dev/snd
+            MEDIA_OPTIONS="${MEDIA_OPTIONS} --device $1:$1"
+            echo "MEDIA_OPTIONS= ${MEDIA_OPTION}"
+        fi
+    fi
+}
+
+#################################
+## -_-- Setup X11 Display -_-- ##
 #################################
 X11_OPTION=
 function setupDisplayType() {
@@ -678,6 +693,7 @@ function setupDisplayType() {
         # ...
         xhost +SI:localuser:$(id -un) 
         xhost + 127.0.0.1
+        detectMedia "/dev/snd"
         echo ${DISPLAY}
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         # Mac OSX
@@ -689,6 +705,7 @@ function setupDisplayType() {
     elif [[ "$OSTYPE" == "cygwin" ]]; then
         # POSIX compatibility layer and Linux environment emulation for Windows
         xhost + 127.0.0.1
+        detectMedia "/dev/snd"
         echo ${DISPLAY}
     elif [[ "$OSTYPE" == "msys" ]]; then
         # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
@@ -697,6 +714,7 @@ function setupDisplayType() {
     elif [[ "$OSTYPE" == "freebsd"* ]]; then
         # ...
         xhost + 127.0.0.1
+        detectMedia "/dev/snd"
         echo ${DISPLAY}
     else
         # Unknown.
@@ -739,6 +757,7 @@ HOSTS_OPTIONS="-v /etc/hosts:/etc/hosts"
 ## ----------------- main --------------------- ##
 ##################################################
 ##################################################
+set -x
 
 case "${BUILD_TYPE}" in
     0)
@@ -763,14 +782,16 @@ case "${BUILD_TYPE}" in
         setupDisplayType
         echo ${DISPLAY}
         #X11_OPTION="-e DISPLAY=$DISPLAY -v $HOME/.chrome:/data -v /dev/shm:/dev/shm -v /tmp/.X11-unix:/tmp/.X11-unix -e DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket"
-        X11_OPTION="-e DISPLAY=$DISPLAY -v /dev/shm:/dev/shm -v /tmp/.X11-unix:/tmp/.X11-unix -e DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket"
+        #X11_OPTION="-e DISPLAY=$DISPLAY -v /dev/shm:/dev/shm -v /tmp/.X11-unix:/tmp/.X11-unix -e DBUS_SYSTEM_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket"
+        X11_OPTION="-e DISPLAY=$DISPLAY -v /dev/shm:/dev/shm -v /tmp/.X11-unix:/tmp/.X11-unix"
         echo "X11_OPTION=${X11_OPTION}"
         MORE_OPTIONS="${MORE_OPTIONS} ${HOSTS_OPTIONS} "
         sudo docker run \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
+            ${MEDIA_OPTIONS} \
             ${REMOVE_OPTION} ${RUN_OPTION} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} \
-            ${X11_OPTION} ${MEDIA_OPTIONS} \
+            ${X11_OPTION} \
             ${privilegedString} \
             ${USER_VARS} \
             ${ENV_VARS} \

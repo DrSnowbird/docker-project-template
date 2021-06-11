@@ -18,18 +18,27 @@ services:
       - DOCKER_HOST_IP=${DOCKER_HOST_IP:-127.0.0.1}
       - DOCKER_HOST_NAME=${DOCKER_HOST_NAME:-localhost}
       # ==== X11 Use only ====
-      - DISPLAY=$DISPLAY
+      - DISPLAY=${DISPLAY:-:0}
       - DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
       # ==== vnc/no-vnc ====
       #- WINDOW_MANAGER=xfce 
       #- VNC_RESOLUTION=1280x800 
       #- VNC_PW=vncpassword 
+    group_add:
+      - audio
+    devices:
+      - "/dev/snd:/dev/snd"
+    volumes:
+      - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./workspace:/home/developer/workspace
+      - ./data:/home/developer/data
     volumes:
       ## ==== Common mapping ====
-      - /etc/hosts:/etc/hosts
-      - /dev/shm:/dev/shm 
-      - /var/run/docker.sock:/var/run/docker.sock
+      #- /etc/hosts:/etc/hosts
+      - /dev/shm:/dev/shm
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - /var/run/docker.sock:/var/run/docker.sock
       #- ./certificates:/home/developer/certificates
       ## ==== Use $HOME/data-docker as base directory: ====
       #- $HOME/data-docker/docker-project-template/data:/home/developer/data
