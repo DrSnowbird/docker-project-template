@@ -91,7 +91,7 @@ pull:
 	fi
 
 
-up: build
+up:
 	sudo docker-compose up -d
 
 down:
