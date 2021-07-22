@@ -720,7 +720,7 @@ function setupDisplayType() {
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         # Mac OSX
         # if you want to multi-media, you need customize it here
-        MEDIA_OPTIONS=
+        MEDIA_OPTIONS=""
         xhost + 127.0.0.1
         export DISPLAY=host.docker.internal:0
         echo ${DISPLAY}
