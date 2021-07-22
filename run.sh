@@ -118,8 +118,8 @@ MORE_OPTIONS=""
 ##   Add any additional options here
 ## ------------------------------------------------------------------------
 #MEDIA_OPTIONS=" --device /dev/snd --device /dev/dri  --device /dev/video0  --group-add audio  --group-add video "
-MEDIA_OPTIONS=" --device /dev/snd --device /dev/dri  --group-add audio  --group-add video "
-#MEDIA_OPTIONS=
+#MEDIA_OPTIONS=" --group-add audio  --group-add video --device /dev/snd --device /dev/dri  "
+MEDIA_OPTIONS=
 
 ###############################################################################
 ###############################################################################
@@ -694,17 +694,22 @@ echo "--------------------------------------------------------"
 #################################
 ## ---- Detect Media/Sound: -- ##
 #################################
-MEDIA_OPTIONS="--group-add audio "
-#            --device /dev/snd:/dev/snd \
+MEDIA_OPTIONS=""
 function detectMedia() {
-    if [ "$1" != "" ]; then
-        if [ -s $1 ]; then
+    devices="/dev/snd /dev/dri"
+    for device in $devices; do
+        if [ -s $device ]; then
             # --device /dev/snd:/dev/snd
-            MEDIA_OPTIONS="${MEDIA_OPTIONS} --device $1:$1"
-            echo "MEDIA_OPTIONS= ${MEDIA_OPTION}"
+            if [ "${MEDIA_OPTIONS}" == "" ]; then
+                MEDIA_OPTIONS=" --group-add audio --group-add video "
+            fi
+            # MEDIA_OPTIONS=" --group-add audio  --group-add video --device /dev/snd --device /dev/dri  "
+            MEDIA_OPTIONS="${MEDIA_OPTIONS} --device $device:$device"
         fi
-    fi
+    done
+    echo "MEDIA_OPTIONS= ${MEDIA_OPTION}"
 }
+detectMedia
 
 #################################
 ## -_-- Setup X11 Display -_-- ##
@@ -715,11 +720,10 @@ function setupDisplayType() {
         # ...
         xhost +SI:localuser:$(id -un) 
         xhost + 127.0.0.1
-        detectMedia "/dev/snd"
         echo ${DISPLAY}
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         # Mac OSX
-        # if you want to multi-media, you need customize it here
+        # if you want to multi-media in MacOS, you need customize it here
         MEDIA_OPTIONS=""
         xhost + 127.0.0.1
         export DISPLAY=host.docker.internal:0
@@ -727,7 +731,6 @@ function setupDisplayType() {
     elif [[ "$OSTYPE" == "cygwin" ]]; then
         # POSIX compatibility layer and Linux environment emulation for Windows
         xhost + 127.0.0.1
-        detectMedia "/dev/snd"
         echo ${DISPLAY}
     elif [[ "$OSTYPE" == "msys" ]]; then
         # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
@@ -736,7 +739,6 @@ function setupDisplayType() {
     elif [[ "$OSTYPE" == "freebsd"* ]]; then
         # ...
         xhost + 127.0.0.1
-        detectMedia "/dev/snd"
         echo ${DISPLAY}
     else
         # Unknown.
