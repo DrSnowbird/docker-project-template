@@ -19,7 +19,7 @@ As simple as just one command to start a Docker-based applications without fudgi
 - "./run.sh" to instantly stand up and "./build/sh" to build containers.
 - For Product usage, please ensure all aspects of security by enhancing source code and setup.
 
-## > Build-time and Run-time Environment Variable files ".env" and "env_file.txt"
+## > Build-time and Run-time Environment Variable files ".env"
 - **".env"** (for docker-compose exclusively only) or **"docker.env"** (our extension): "docker-compose" only environment variables. "docke-compose" command will automatically search for the file ".env" in the current directory.
 - : Build-time environment variables to  overwrite those variables defined inside Dockefile
 If you have a file named .env in your project, it’s only used to put values into the docker-compose.yml file which is in the same folder. Those are used with Docker Compose and Docker Stack.
