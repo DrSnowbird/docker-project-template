@@ -1,0 +1,10 @@
+default__heading=Here’s A Title
+default__learn_more__title=Title of Thing
+default__learn_more__url=www.url.com
+default__learn_more__description=description
+default__learn_more__opens_new_window=true
+normal__heading=Here’s A Title
+normal__learn_more__title=Title of Thing
+normal__learn_more__url=www.url.com
+normal__learn_more__description=description
+normal__learn_more__opens_new_window=true

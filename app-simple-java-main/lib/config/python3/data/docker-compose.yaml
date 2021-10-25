@@ -1,0 +1,18 @@
+version: '3.1'
+volumes:
+  template-python-docker:
+services:
+  template-python-docker:
+    build:
+      context: .
+      args:
+        - APP_HOME: /home/developer/app
+    volumes:
+      - data:/app/data
+    ports:
+      - "7000:7000"
+    depends_on:
+      - other_service
+    links:
+      - "db:mongo"
+    command: /wait-for-it.sh cascade:5000 -- pipenv run python cascade.py --job_runner

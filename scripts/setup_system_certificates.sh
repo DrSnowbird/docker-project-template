@@ -2,7 +2,11 @@
 
 echo "####################### Components: $(basename $0) ###########################"
 
-SOURCE_CERTIFICATES_DIR=${SOURCE_CERTIFICATES_DIR:-/certificates}
+if [ "$1" != "" ]; then
+    SOURCE_CERTIFICATES_DIR=${SOURCE_CERTIFICATES_DIR:-$1}
+else
+    SOURCE_CERTIFICATES_DIR=${SOURCE_CERTIFICATES_DIR:-/certificates}
+fi
 
 #### ---------------------------------------------------------------------------------------------------------------------------------- ####
 #### ---- (ref: https://stackoverflow.com/questions/59895/get-the-source-directory-of-a-bash-script-from-within-the-script-itself)
@@ -137,9 +141,9 @@ if [ $OS_TYPE -eq 1 ]; then
     CMD_OPT=
     TARGET_CERTIFICATES_DIR=/usr/local/share/ca-certificates/extra
 else
-    if [ $OS_TYPE -eq 1 ]; then
+    if [ $OS_TYPE -eq 2 ]; then
         # CentOS
-        CERT_COMMAND=`which update-ca-trust extract`
+        CERT_COMMAND=`which update-ca-trust`
         TARGET_CERTIFICATES_DIR=/etc/pki/ca-trust/source/anchors
         CMD_OPT=extract
     else

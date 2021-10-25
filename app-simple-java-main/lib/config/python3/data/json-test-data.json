@@ -1,0 +1,132 @@
+{
+    "myprojapp": {
+        "plugin": {
+            "name": "myproj",
+            "configurable": {
+                "path": "configurable_parameters.yml"
+            }
+        },
+        "controller": {
+            "disable": false,
+            "host": "abdn-vm-166.openkbs.org",
+            "port": 6100
+        },
+        "myproj": {
+            "host": "abdn-vm-166.openkbs.org",
+            "port": 6101,
+            "log_dir": "log",
+            "logger": {
+                "host": "abdn-vm-166.openkbs.org",
+                "logging": {
+                    "version": 1,
+                    "formatters": {
+                        "json": {
+                            "format": "{\"relativeCreated\": %(relativeCreated)d, \"logger\": \"%(name)s\", \"level\": \"%(levelname)s\", \"message\": \"%(message)s\"}"
+                        }
+                    },
+                    "handlers": {
+                        "plannerWorkflowFile": {
+                            "()": "ext://__main__.rotate_if_exists_file_handler",
+                            "level": "DEBUG",
+                            "formatter": "json",
+                            "filename": "logs/workflow.log",
+                            "backupCount": 50
+                        }
+                    },
+                    "root": {
+                        "level": "DEBUG",
+                        "handlers": [
+                            "plannerWorkflowFile"
+                        ]
+                    }
+                }
+            },
+            "adapters": {
+                "elasticsearch": {
+                    "disable": false,
+                    "hosts": [
+                        "myproj-dev.openkbs.org:9200",
+                        "es01.openkbs.org:9200",
+                        "es02.openkbs.org:9200",
+                        "es03.openkbs.org:9200"
+                    ]
+                },
+                "cascade": {
+                    "disable": false,
+                    "url": "http://myproj-dev.openkbs.org:5003",
+                    "username": "cascade",
+                    "password": "cascade",
+                    "config": "Caldera Tech Plus",
+                    "verify": false
+                },
+                "bsf": {
+                    "disable": false,
+                    "url": "http://myproj-dev.openkbs.org:5003",
+                    "config": "Caldera Tech Plus",
+                    "username": "cascade",
+                    "password": "cascade",
+                    "time_step": 60,
+                    "agents": [
+                        {
+                            "agent": "Normalizer"
+                        },
+                        {
+                            "agent": "Step_Deduplicator"
+                        },
+                        {
+                            "agent": "Predicator"
+                        },
+                        {
+                            "agent": "GapFiller"
+                        },
+                        {
+                            "agent": "ModificationJanitor"
+                        }
+                    ],
+                    "file": "metrics/json/5005CASCADEreports.json"
+                }
+            }
+        },
+        "reasoner": {
+            "address": "abdn-vm-166.openkbs.org",
+            "port": 12781,
+            "responderUrl": "http://abdn-vm-166.openkbs.org:5000",
+            "manager": "http://abdn-vm-166.openkbs.org:7000/api",
+            "fdnamanager": "http://abdn-vm-166.openkbs.org:8181",
+            "messageProducer": "abdn-vm-166.openkbs.org:9092",
+            "dummyKafka": 0
+        },
+        "manager": {
+            "protocol": "http",
+            "host": "abdn-vm-166.openkbs.org",
+            "port": 7000,
+            "event_filters": null,
+            "car_filter": {
+                "sources": []
+            },
+            "batch_size": 10
+        },
+        "responder": {
+            "host": "abdn-vm-166.openkbs.org",
+            "port": 5000
+        },
+        "fdna": {
+            "host": "abdn-vm-166.openkbs.org",
+            "port": 8181
+        },
+        "planner": {
+            "training": [
+                "metrics/json/BRAWL_myproj_20170414_06_state_final.json",
+                "metrics/json/BRAWL_myproj_20170414_07_state_final.json"
+            ]
+        },
+        "kafka": {
+            "host": "abdn-vm-155.openkbs.org",
+            "port": 9092
+        },
+        "zookeeper": {
+            "host": "abdn-vm-166.openkbs.org",
+            "port": 2181
+        }
+    }
+}

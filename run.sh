@@ -187,7 +187,7 @@ echo "REMOVE_OPTION=${REMOVE_OPTION}"
 ###########################################################################
 
 ## -- (this script will include ./.env only if "./docker-run.env" not found
-DOCKER_ENV_FILE="./docker-run.env"
+DOCKER_ENV_FILE="./.env"
 
 ###########################################################################
 #### (Optional - to filter Environmental Variables for Running Docker)
@@ -216,6 +216,7 @@ function get_HOST_IP() {
         HOST_NAME=`hostname -f`
         HOST_IP=`ip route get 1|grep via | awk '{print $7}'`
         SED_MAC_FIX=
+        echo -e ">>>> HOST_IP: ${HOST_IP}"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         # Mac OSX
         HOST_NAME=`hostname -f`
@@ -423,13 +424,17 @@ function generateVolumeMapping() {
                         fi
                         checkHostVolumePath "${left}"
                     fi
+                    mkdir -p ${LOCAL_VOLUME_DIR}/${left}
+                    if [ $DEBUG -gt 0 ]; then ls -al ${LOCAL_VOLUME_DIR}/${left}; fi
                 fi
             fi
         else
             ## -- pattern like: "data"
             debug "-- default sub-directory (without prefix absolute path) --"
             VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/$vol:${DOCKER_VOLUME_DIR}/$vol"
-            mkdir -p ${LOCAL_VOLUME_DIR}/$vol
+            if [ ! -s ${LOCAL_VOLUME_DIR}/$vol ]; then
+                mkdir -p ${LOCAL_VOLUME_DIR}/$vol
+            fi
             if [ $DEBUG -gt 0 ]; then ls -al ${LOCAL_VOLUME_DIR}/$vol; fi
         fi       
         echo ">>> expanded VOLUME_MAP: ${VOLUME_MAP}"
@@ -468,7 +473,8 @@ echo "PORT_MAP=${PORT_MAP}"
 ###################################################
 #### ---- Generate Environment Variables       ----
 ###################################################
-ENV_VARS=""
+ENV_VARS=
+ENV_APP_RUN_CMD=
 function generateEnvVars_v2() {
     while read line; do
         echo "Line=$line"
@@ -786,13 +792,13 @@ fi
 ##################################################
 ##################################################
 set -x
-
+echo -e ">>> (final) ENV_VARS=${ENV_VARS}"
 case "${BUILD_TYPE}" in
     0)
         #### 0: (default) has neither X11 nor VNC/noVNC container build image type
         #### ---- for headless-based / GUI-less ---- ####
         MORE_OPTIONS="${MORE_OPTIONS} ${HOSTS_OPTIONS} "
-        sudo docker run \
+        docker run \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             ${REMOVE_OPTION} ${RUN_OPTION} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} \
@@ -814,7 +820,7 @@ case "${BUILD_TYPE}" in
         X11_OPTION="-e DISPLAY=$DISPLAY -v /dev/shm:/dev/shm -v /tmp/.X11-unix:/tmp/.X11-unix"
         echo "X11_OPTION=${X11_OPTION}"
         MORE_OPTIONS="${MORE_OPTIONS} ${HOSTS_OPTIONS} "
-        sudo docker run \
+        docker run \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             ${MEDIA_OPTIONS} \
@@ -839,7 +845,7 @@ case "${BUILD_TYPE}" in
             ENV_VARS="${ENV_VARS} -e VNC_RESOLUTION=${VNC_RESOLUTION}" 
         fi
         MORE_OPTIONS="${MORE_OPTIONS} ${HOSTS_OPTIONS} "
-        sudo docker run \
+        docker run \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             ${REMOVE_OPTION} ${RUN_OPTION} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} \

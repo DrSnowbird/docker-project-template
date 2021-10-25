@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_HOME=${1:-myenv}
+PROJECT_HOME=${1:-myvenv}
 
 PYTHON_VERSION=3
 #PYTHON_VERSION=3.6

@@ -1,0 +1,13 @@
+myprojapp:
+    plugin:
+        name: myproj
+        configurable:
+            path: configurable_parameters.yml
+    controller:
+        disable: false
+        host: 10.128.9.166
+        port: 6100
+    myproj:
+        host: 10.128.9.166
+        port: 6101
+        log_dir: log

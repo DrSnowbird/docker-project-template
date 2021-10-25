@@ -1,0 +1,2 @@
+myprojapp.plugin.name=myproj
+myprojapp.plugin.configurable.path=configurable_parameters.yml

@@ -17,3 +17,4 @@ cd ${PROJ_DIR}
 bin/auto-config-with-template.sh $@ .env.template
 bin/auto-config-with-template.sh $@ docker-compose.yml.template
 
+bin/auto-config-docker-compose.sh

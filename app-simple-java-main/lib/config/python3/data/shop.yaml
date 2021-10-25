@@ -1,0 +1,30 @@
+customers_city:
+  - city: New York
+    customer_id: 1
+  - city: Saint Louis
+    customer_id: 2
+  - city: Mountain View
+    customer_id: 3
+customers:
+  - customer_id: 1
+    name: John
+    orders:
+      - order_id: 1
+        item: Guitar
+        quantity: 1
+  - customer_id: 2
+    name: Paul
+    orders:
+      - order_id: 2
+        item: Banjo
+        quantity: 2
+      - order_id: 3
+        item: Piano
+        quantity: 1
+  - customer_id: 3
+    name: Diana
+    orders:
+      - order_id: 4
+        item: Drums
+        quantity: 1
+        

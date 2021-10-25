@@ -1,12 +1,19 @@
 #!/bin/bash -x
+#
+# docker-entrypoint.sh
+#
+# The Dockerfile CMD, or any "docker run" command option, gets
+# passed as command-line arguments to this script.
 
+# Abort on any error (good shell hygiene)
 set -e
 
+env
 whoami
-
 env | sort
 
 echo "Inputs: $*"
+
 
 #### ------------------------------------------------------------------------
 #### ---- Extra line added in the script to run all command line arguments

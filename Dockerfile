@@ -55,8 +55,8 @@ RUN sudo chmod -R 0777 /host/run/dbus/system_bus_socket
 #### ---- python3: venv  ----
 #### ------------------------
 RUN mkdir ${HOME}/bin
-COPY --chown=$USER ./bin/create-venv.sh ${HOME}/bin/
-COPY --chown=$USER ./bin/setup_venv_bash_profile.sh ${HOME}/bin/
+COPY --chown=$USER:$USER ./bin/create-venv.sh ${HOME}/bin/
+COPY --chown=$USER:$USER ./bin/setup_venv_bash_profile.sh ${HOME}/bin/
 
 RUN sudo chown -R $USER:$USER ${HOME} && sudo chmod +x ${HOME}/bin/*.sh 
 RUN ${HOME}/bin/create-venv.sh myvenv
@@ -72,8 +72,8 @@ RUN ls -al $HOME/bin
 USER ${USER}
 WORKDIR ${HOME}
 
-#ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
 #CMD ["/usr/bin/firefox"]
 #CMD ["/usr/bin/google-chrome","--no-sandbox","--disable-gpu","--disable-extensions"]
-#CMD ["/usr/bin/google-chrome","--no-sandbox","--disable-gpu",]
+CMD ["/usr/bin/google-chrome","--no-sandbox","--disable-gpu"]
 

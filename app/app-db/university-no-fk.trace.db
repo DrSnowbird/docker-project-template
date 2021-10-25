@@ -1,0 +1,3 @@
+2021-10-24 01:47:39 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SCRIPT TO ~[*]/UNIV1.SQL"; expected "NOT, EXISTS, INTERSECTS, UNIQUE"; SQL statement:
+SCRIPT TO ~/univ1.sql [42001-200]
