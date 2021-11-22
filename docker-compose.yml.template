@@ -1,0 +1,77 @@
+version: '3.1' 
+
+services:
+  {{CONTAINER_NAME}}:
+    container_name: {{CONTAINER_NAME}}
+    image: {{ORG_NAME}}/{{CONTAINER_NAME}}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    gpus: all
+    env_file:
+      - ./.env
+    environment:
+      - CONTAINER_NAME={{CONTAINER_NAME}}
+      - USER_ID=${USER_ID:-1000}
+      - GROUP_ID=${GROUP_ID:-1000}
+      # - APP_HOME=${APP_HOME:-/home/developer/app}
+      # - APP_MAIN=${APP_MAIN:-setup.sh}
+      - DOCKER_HOST_IP=${DOCKER_HOST_IP:-{{DOCKER_HOST_IP}}}
+      - DOCKER_HOST_NAME=${DOCKER_HOST_NAME:-{{DOCKER_HOST_NAME}}}
+      # ==== X11 Use only ====
+      - DISPLAY=$DISPLAY
+      - DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
+      # ==== vnc/no-vnc ====
+      #- WINDOW_MANAGER=xfce 
+      #- VNC_RESOLUTION=1280x800 
+      #- VNC_PW=vncpassword 
+    ## -------------------------------
+    ## -- Audio sound setup:
+    ## -------------------------------
+    group_add:
+      - audio
+    devices:
+      - "/dev/snd:/dev/snd"
+    ## -------------------------------------------
+    ## -- Change to your specific Volumes Mapping:
+    ## -------------------------------------------
+    volumes:
+      ## ==== Common mapping: ====
+      - /etc/hosts:/etc/hosts
+      - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /var/run/docker.sock:/var/run/docker.sock
+      #- ./certificates:/home/developer/certificates
+      ## ==== Use $HOME/data-docker as base directory: ====
+      - $HOME/data-docker/{{CONTAINER_NAME}}/data:/home/developer/data
+      - $HOME/data-docker/{{CONTAINER_NAME}}/workspace:/home/developer/workspace
+      ## ==== Use current directory as root for mapping Volumes: ====
+      ## (You need to manually create those child directory: ./data, ./workspace, and others)
+      #- ./data:/home/developer/data
+      #- ./workspace:/home/developer/workspace
+      ## ==== App's additional mapping Volumes: ====
+      #{{MORE_VOLUMES_MAPPING}}
+    ## -------------------------------
+    ## -- Change to your specific port
+    ## -------------------------------
+    # ports:
+    #   - "12345:12345"
+    #{{PORTS_MAPPING}}
+    ## -----------------------------
+    ## -- Network setup if needed --
+    ## -----------------------------
+    # networks:
+    #  - dev_network
+
+#volumes:
+#    {{CONTAINER_NAME}}_volume:
+#        external: false
+
+
+#networks:
+#  dev_network:
+#    external:
+#      name: dev_network
+
+

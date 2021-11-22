@@ -1,0 +1,49 @@
+#ARG BASE=${BASE:-python-non-root}
+ARG BASE=${BASE:-jdk11-mvn-py3}
+
+FROM ${BASE}
+
+MAINTAINER DrSnowbird "DrSnowbird@openkbs.org"
+
+USER ${USER:-developer}
+WORKDIR ${HOME:-/home/developer}
+
+ENV APP_HOME=${APP_HOME:-$HOME/app}
+ENV APP_MAIN=${APP_MAIN:-setup.sh}
+
+#########################
+#### ---- App:  ---- ####
+#########################
+COPY --chown=$USER:$USER ./app $HOME/app
+
+#########################################
+##### ---- Setup: Entry Files  ---- #####
+#########################################
+ENV APP_HOME=${APP_HOME:-$HOME/app}
+ENV APP_MAIN=${APP_MAIN:-setup.sh}
+
+COPY --chown=${USER}:${USER} docker-entrypoint.sh /
+COPY --chown=${USER}:${USER} ${APP_MAIN} ${APP_HOME}/setup.sh
+
+RUN sudo chmod +x /docker-entrypoint.sh ${APP_HOME}/setup.sh 
+
+#########################################
+##### ---- Docker Entrypoint : ---- #####
+#########################################
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+#####################################
+##### ---- user: developer ---- #####
+#####################################
+WORKDIR ${APP_HOME}
+USER ${USER}
+
+######################
+#### (Test only) #####
+######################
+#CMD ["/bin/bash"]
+######################
+#### (RUN setup) #####
+######################
+CMD ["setup.sh"]
+

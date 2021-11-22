@@ -1,0 +1,74 @@
+version: '3.1' 
+
+services:
+  docker-project-template:
+    container_name: docker-project-template
+    image: openkbs/docker-project-template
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      - CONTAINER_NAME=docker-project-template
+      - USER_ID=${USER_ID:-1000}
+      - GROUP_ID=${GROUP_ID:-1000}
+      # - APP_HOME=${APP_HOME:-/home/developer/app}
+      # - APP_MAIN=${APP_MAIN:-setup.sh}
+      - DOCKER_HOST_IP=${DOCKER_HOST_IP:-192.168.0.122}
+      - DOCKER_HOST_NAME=${DOCKER_HOST_NAME:-aurora}
+      # ==== X11 Use only ====
+      - DISPLAY=$DISPLAY
+      - DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
+      # ==== vnc/no-vnc ====
+      #- WINDOW_MANAGER=xfce 
+      #- VNC_RESOLUTION=1280x800 
+      #- VNC_PW=vncpassword 
+    ## -------------------------------
+    ## -- Audio sound setup:
+    ## -------------------------------
+    group_add:
+      - audio
+    devices:
+      - "/dev/snd:/dev/snd"
+    ## -------------------------------------------
+    ## -- Change to your specific Volumes Mapping:
+    ## -------------------------------------------
+    volumes:
+      ## ==== Common mapping: ====
+      - /etc/hosts:/etc/hosts
+      - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /var/run/docker.sock:/var/run/docker.sock
+      #- ./certificates:/home/developer/certificates
+      ## ==== Use $HOME/data-docker as base directory: ====
+      - $HOME/data-docker/docker-project-template/data:/home/developer/data
+      - $HOME/data-docker/docker-project-template/workspace:/home/developer/workspace
+      ## ==== Use current directory as root for mapping Volumes: ====
+      ## (You need to manually create those child directory: ./data, ./workspace, and others)
+      #- ./data:/home/developer/data
+      #- ./workspace:/home/developer/workspace
+      ## ==== App's additional mapping Volumes: ====
+      #- /home/user1/data-docker/docker-project-template/app:/home/developer/app
+
+    ## -------------------------------
+    ## -- Change to your specific port
+    ## -------------------------------
+    # ports:
+    #   - "12345:12345"
+    #ports:
+    #  - "8282:8282"
+    #  - "9292:9292"
+
+    ## -----------------------------
+    ## -- Network setup if needed --
+    ## -----------------------------
+    # networks:
+    #  - dev_network
+
+#networks:
+#  dev_network:
+#    external:
+#      name: dev_network
+
+
