@@ -34,15 +34,14 @@ IS_TO_RUN_GPU=1
 ###################################################
 #### ---- Parse Command Line Arguments:  ---- #####
 ###################################################
-
 RESTART_OPTION_VALUES=" no on-failure unless-stopped always "
 RESTART_OPTION=${RESTART_OPTION:-no}
 
 ## ------------------------------------------------------------------------
-## Valid "RUN_TYPE" values: 
-##    0: (default) Interactive Container -
+## "RUN_OPTION" values: 
+##    "-it" : (default) Interactive Container -
 ##       ==> Best for Debugging Use
-##    1: Detach Container / Non-Interactive 
+##    "-d" : Detach Container / Non-Interactive 
 ##       ==> Usually, when not in debugging mode anymore, then use 1 as choice.
 ##       ==> Or, your frequent needs of the container for DEV environment Use.
 ## ------------------------------------------------------------------------
@@ -83,8 +82,8 @@ while (( "$#" )); do
           shift 2
       else
           echo "--- INFO: -r|--restart options: { no, on-failure, unless-stopped, always }"
-          echo "--- default to 'always' "
-          RESTART_OPTION=unless-stopped
+          echo "Error: Unsupported value: $2"
+          exit 1
       fi
       ;;
     -*|--*=) # unsupported flags
@@ -166,24 +165,13 @@ if [ ${IS_TO_RUN_GPU} -gt 0 ]; then
 fi
 echo "$@"
 
-## ------------------------------------------------------------------------
-## Change to one (1) if run.sh needs to use host's user/group to run the Container
-## Valid "USER_VARS_NEEDED" values: 
-##    0: (default) Not using host's USER / GROUP ID
-##    1: Yes, using host's USER / GROUP ID for Container running.
-## ------------------------------------------------------------------------
-USER_VARS_NEEDED=0
 
 ## ------------------------------------------------------------------------
 ## More optional values:
 ##   Add any additional options here
 ## ------------------------------------------------------------------------
 #MORE_OPTIONS="--privileged=true"
-MORE_OPTIONS=""
-
-## -- IPC Host, Shm
-#MISC_OPTIONS="--ipc=host --shm-size 4g"
-MISC_OPTIONS="--ipc=host "
+MORE_OPTIONS=
 
 ## ------------------------------------------------------------------------
 ## Multi-media optional values:
@@ -233,7 +221,7 @@ ORGANIZATION=${ORGANIZATION:-openkbs}
 baseDataFolder="$HOME/data-docker"
 
 ###################################################
-#### **** Container package information ****
+#### **** Container HOST information ****
 ###################################################
 SED_MAC_FIX="''"
 CP_OPTION="--backup=numbered"
@@ -262,6 +250,28 @@ function get_HOST_IP() {
 get_HOST_IP
 HOST_IP=${HOST_IP:-127.0.0.1}
 HOST_NAME=${HOST_NAME:-localhost}
+
+##################################################
+## ---- Setup accessing HOST's /etc/hosts: ---- ##
+##################################################
+IS_USE_HOST_OPTIONS=1
+function container_host_options() {
+    ## **************** WARNING: *********************
+    ## **************** WARNING: *********************
+    ## **************** WARNING: *********************
+    #  => this might open up more attack surface since
+    #   /etc/hosts has other nodes IP/name information
+    # ------------------------------------------------
+    if [ ${IS_USE_HOST_OPTIONS} -gt 0 ]; then
+        if [ ${HOST_USE_IP_OR_NAME} -eq 2 ]; then
+            HOSTS_OPTIONS="-h ${HOST_NAME} -v /etc/hosts:/etc/hosts "
+        else
+            # default use HOST_IP
+            HOSTS_OPTIONS="-h ${HOST_IP} -v /etc/hosts:/etc/hosts "
+        fi
+    fi
+}
+container_host_options
 
 ###################################################
 #### **** Container package information ****
@@ -342,6 +352,20 @@ function detectDockerRunEnvFile() {
 }
 detectDockerRunEnvFile
 
+################################################
+#### ---- USER_OPTIONS: Optional setup:---- ####
+################################################
+USER_OPTION=
+function user_ids_options() {
+    #USER_OPTIONS="--user $(id -g):$(id -u)"
+    USER_ID=`cat ${DOCKER_ENV_FILE} | grep  "^USER_ID=" | cut -d'=' -f2 | sed 's/ *$//g'`
+    GROUP_ID=`cat ${DOCKER_ENV_FILE} | grep  "^GROUP_ID=" | cut -d'=' -f2 | sed 's/ *$//g'`
+    if [ "${USER_ID}" != "" ] && [ "${USER_ID}" != "" ]; then
+        USER_OPTIONS="--user ${USER_ID:-$(id -g)}:${GROUP_ID:-$(id -u)}"
+    fi
+}
+user_ids_options
+
 ###################################################
 #### ---- Function: Generate volume mappings  ----
 ####      (Don't change!)
@@ -372,7 +396,6 @@ function cutomizedVolume() {
         dest_volume=`echo $DATA_VOLUME | cut -d'-' -f2 | cut -d':' -f2`
         source_volume=$(basename $imageTag)_${docker_volume}
         sudo docker volume create ${source_volume}
-        
         VOLUME_MAP="-v ${source_volume}:${dest_volume} ${VOLUME_MAP}"
     else
         echo "---- ${DATA_VOLUME} already is defined! Hence, ignore setup ${DATA_VOLUME} ..."
@@ -382,12 +405,15 @@ function cutomizedVolume() {
 
 function checkHostVolumePath() {
     _left=$1
-    if [ ! -s ${_left} ]; then
+    if [ ! -s ${_left} ]; then 
+        echo "--- checkHostVolumePath: ${_left}: Not existing!"
         mkdir -p ${_left}
         sudo chown -R $USER:$USER ${_left}
     fi
-    if [ ! -s ${_left} ]; then 
-        echo "*** ERROR: ${_left}: Not existing!"
+    _SYS_PATHS="/dev /var /etc"
+    if [[ $_SYS_PATHS != *"${_left}"* ]]; then
+        sudo chown -R ${USER_ID}:${USER_ID} ${_left}
+        ls -al ${_left}
     fi
 }
 
@@ -399,7 +425,7 @@ function generateVolumeMapping() {
     fi
     for vol in $VOLUMES_LIST; do
         echo
-        echo ">>>>>>>>> $vol"
+        echo -e "\n>>>>>>>>> $vol"
         hasColon=`echo $vol|grep ":"`
         ## -- allowing change local volume directories --
         if [ "$hasColon" != "" ]; then
@@ -458,15 +484,22 @@ function generateVolumeMapping() {
                 fi
             fi
         else
-            ## -- pattern like: "data"
-            debug "-- default sub-directory (without prefix absolute path) --"
-            VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/$vol:${DOCKER_VOLUME_DIR}/$vol"
-            if [ ! -s ${LOCAL_VOLUME_DIR}/$vol ]; then
-                mkdir -p ${LOCAL_VOLUME_DIR}/$vol
+            volHasDot=`echo $vol|grep "^\./"`
+            if [ "$volHasDot" != "" ]; then
+                ## has "./data" alone 
+                debug "******** B. Left HAS Dot pattern: leftHasDot=$volHasDot"
+                debug "******* A-2 -- pattern like ./data:data --"
+                VOLUME_MAP="${VOLUME_MAP} -v `pwd`/${vol#./}:${DOCKER_VOLUME_DIR}/${vol#./}"
+                checkHostVolumePath "`pwd`/${vol#./}"
+            else
+                ## -- pattern like: "data"
+                debug "-- default sub-directory (without prefix absolute path) --"
+                VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/$vol:${DOCKER_VOLUME_DIR}/$vol"
+                checkHostVolumePath "${LOCAL_VOLUME_DIR}/$vol"
+                if [ $DEBUG -gt 0 ]; then ls -al ${LOCAL_VOLUME_DIR}/$vol; fi
             fi
-            if [ $DEBUG -gt 0 ]; then ls -al ${LOCAL_VOLUME_DIR}/$vol; fi
         fi       
-        echo ">>> expanded VOLUME_MAP: ${VOLUME_MAP}"
+        echo -e "\n >>> expanded VOLUME_MAP: ${VOLUME_MAP}"
     done
 }
 #### ---- Generate Volumes Mapping ----
@@ -502,7 +535,7 @@ echo "PORT_MAP=${PORT_MAP}"
 ###################################################
 #### ---- Generate Environment Variables       ----
 ###################################################
-ENV_VARS=""
+ENV_VARS=
 function generateEnvVars2() {
     key_list=`cat ${DOCKER_ENV_FILE} | grep -v "^#" |  grep -E "^[[:blank:]]*$1.+[[:blank:]]*=[[:blank:]]*.+[[:blank:]]*" |  awk 'BEGIN { FS = "=" } ; { print $1 }' `
     echo "key_list=$key_list"
@@ -540,7 +573,6 @@ function generateEnvVars_v2() {
 }
 #generateEnvVars_v2
 #echo ">> ENV_VARS=$ENV_VARS"
-
 
 function generateEnvVars() {
     if [ "${1}" != "" ]; then
@@ -724,13 +756,6 @@ echo "---------------------------------------------"
 
 cleanup
 
-#################################
-## -- USER_VARS into Docker -- ##
-#################################
-if [ ${USER_VARS_NEEDED} -gt 0 ]; then
-    USER_VARS="--user $(id -u $USER)"
-fi
-
 echo "--------------------------------------------------------"
 echo "==> Commands to manage Container:"
 echo "--------------------------------------------------------"
@@ -838,26 +863,18 @@ fi
 ##################################################
 echo ">>> (final) ENV_VARS=${ENV_VARS}"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo -e ">>> (final) ENV_VARS=${ENV_VARS}"
+
 set -x
 
-########################################
-#### ---- USER: Optional setup:---- ####
-########################################
-#USER_OPTIONS="--user $(id -u):$(id -g)"
-USER_ID=`cat ${DOCKER_ENV_FILE} | grep  "^USER_ID=" | cut -d'=' -f2 | sed 's/ *$//g'`
-GROUP_ID=`cat ${DOCKER_ENV_FILE} | grep  "^GROUP_ID=" | cut -d'=' -f2 | sed 's/ *$//g'`
-USER_OPTIONS="--user ${USER_ID:-1000}:${GROUP_ID:-1000}"
-MORE_OPTIONS="${MORE_OPTIONS} ${USER_OPTIONS}"
-
-echo "args-amper:$@"
-echo "args-start:$*"
+MORE_OPTIONS="${MORE_OPTIONS} ${HOSTS_OPTIONS} "
 
 case "${BUILD_TYPE}" in
     0)
         #### 0: (default) has neither X11 nor VNC/noVNC container build image type
         #### ---- for headless-based / GUI-less ---- ####
-	#bash -c "docker run --name=${instanceName}  --restart=${RESTART_OPTION}  ${REMOVE_OPTION} ${RUN_OPTION} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS}  ${privilegedString}  ${USER_VARS} $ENV_VARS ${VOLUME_MAP}  ${PORT_MAP}  ${imageTag} $* "
-        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${GPU_OPTION} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${privilegedString} ${USER_VARS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag} $@ "
+	#bash -c "docker run --name=${instanceName}  --restart=${RESTART_OPTION}  ${REMOVE_OPTION} ${RUN_OPTION} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS}  ${privilegedString}  ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP}  ${PORT_MAP}  ${imageTag} $* "
+        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${GPU_OPTION} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${privilegedString} ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag} $@ "
         ;;
     1)
         #### 1: X11/Desktip container build image type
@@ -868,7 +885,7 @@ case "${BUILD_TYPE}" in
         #X11_OPTION="-e DISPLAY=$DISPLAY -v /dev/shm:/dev/shm -v /tmp/.X11-unix:/tmp/.X11-unix -e DBUS_SYSTEM_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket"
         X11_OPTION="-e DISPLAY=$DISPLAY -v /dev/shm:/dev/shm -v /tmp/.X11-unix:/tmp/.X11-unix"
         echo "X11_OPTION=${X11_OPTION}"
-        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${GPU_OPTION} ${MEDIA_OPTIONS} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${X11_OPTION} ${privilegedString} ${USER_VARS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag} $@"
+        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${GPU_OPTION} ${MEDIA_OPTIONS} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${X11_OPTION} ${privilegedString} ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag} $@"
         ;;
     2)
         #### 2: VNC/noVNC container build image type
@@ -880,7 +897,7 @@ case "${BUILD_TYPE}" in
             VNC_RESOLUTION=1920x1080
             ENV_VARS="${ENV_VARS} -e VNC_RESOLUTION=${VNC_RESOLUTION}" 
         fi
-        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${privilegedString} ${USER_VARS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag} $@"
+        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${privilegedString} ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag} $@"
         ;;
 
 esac
