@@ -21,6 +21,13 @@ function usage() {
     echo "-----------------------------------------------------------------------------------------------"
 }
 
+DEBUG=0
+function debug() {
+    if [ $DEBUG -gt 0 ]; then
+        echo $*
+    fi
+}
+
 ## ---------- ##
 ## -- main -- ##
 ## ---------- ##
@@ -30,6 +37,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJ_DIR=$(dirname $DIR)
 
 CONTAINER_NAME=$(basename $PROJ_DIR)
+
 
 ## -----------------------
 ## -- Organization Name --
@@ -122,7 +130,7 @@ TEMPLATE_FILE_PATH=$1
 echo "## ---- check the exsitence of template file: ${TEMPLATE_FILE_PATH}"
 if [ ! -s "${TEMPLATE_FILE_PATH}" ]; then
     echo "*** ERROR: Template file: ${TEMPLATE_FILE_PATH} not found! Abort"
-    exit 1
+    exit 0
 else
     echo "--- OK: Template file: ${TEMPLATE_FILE_PATH} found! Continue ..."
 fi
