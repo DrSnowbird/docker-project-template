@@ -8,6 +8,13 @@
 
 #set -e
 
+DEBUG=0
+function debug() {
+    if [ $DEBUG -gt 0 ]; then
+        echo $*
+    fi
+}
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 PROJ_DIR=$(dirname $DIR)
@@ -15,6 +22,7 @@ PROJ_DIR=$(dirname $DIR)
 cd ${PROJ_DIR}
 
 bin/auto-config-with-template.sh $@ docker-compose.yml.template
+
 
 ###################################################
 #### ---- Detect Docker Run Env files ----
@@ -249,14 +257,26 @@ function generateVolumeMapping_dockercompose() {
                 fi
             fi
         else
-            ## -- pattern like: "data"
-            debug "-- default sub-directory (without prefix absolute path) --"
-            VOLUMES_MAPPING="${VOLUMES_MAPPING}${prefix_yaml}${LOCAL_VOLUME_DIR}/$vol:${DOCKER_VOLUME_DIR}/$vol"
-            VOLUMES_MAPPING_LIST="${VOLUMES_MAPPING_LIST} ${LOCAL_VOLUME_DIR}/$vol:${DOCKER_VOLUME_DIR}/$vol"
-            if [ ! -s ${LOCAL_VOLUME_DIR}/$vol ]; then
-                mkdir -p ${LOCAL_VOLUME_DIR}/$vol
+            ## -- pattern like: "data" or "./data"
+            hasDot=`echo $left|grep "^\./"`
+            if [ "$hasDot" != "" ]; then
+                ## pattern: "./data"
+                debug "-- pattern: ./data --"
+                VOLUMES_MAPPING="${VOLUMES_MAPPING}${prefix_yaml}`pwd`/${vol#./}:${DOCKER_VOLUME_DIR}/${vol#./}"
+                VOLUMES_MAPPING_LIST="${VOLUMES_MAPPING_LIST} `pwd`/${vol#./}:${DOCKER_VOLUME_DIR}/${vol#./}"
+                if [ ! -s `pwd`/${vol#./} ]; then
+                    mkdir -p `pwd`/${vol#./}
+                fi
+            else
+                ## pattern: "data"
+                debug "-- default sub-directory (without prefix absolute path) --"
+                VOLUMES_MAPPING="${VOLUMES_MAPPING}${prefix_yaml}${LOCAL_VOLUME_DIR}/$vol:${DOCKER_VOLUME_DIR}/$vol"
+                VOLUMES_MAPPING_LIST="${VOLUMES_MAPPING_LIST} ${LOCAL_VOLUME_DIR}/$vol:${DOCKER_VOLUME_DIR}/$vol"
+                if [ ! -s ${LOCAL_VOLUME_DIR}/$vol ]; then
+                    mkdir -p ${LOCAL_VOLUME_DIR}/$vol
+                fi
+                if [ $DEBUG -gt 0 ]; then ls -al ${LOCAL_VOLUME_DIR}/$vol; fi
             fi
-            if [ $DEBUG -gt 0 ]; then ls -al ${LOCAL_VOLUME_DIR}/$vol; fi
         fi       
         echo ">>> expanded VOLUMES_MAPPING: ${VOLUMES_MAPPING}"
     done
